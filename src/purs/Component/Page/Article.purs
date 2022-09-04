@@ -1,37 +1,30 @@
-module Component.App (Output(..), component) where
+module Component.Page.Article (component) where
 
 import Prelude
 
 import Control.Monad.State (put)
 import Data.Array as Array
-import Data.DateTime.Instant (Instant)
-import Data.FunctorWithIndex (mapWithIndex)
-import Data.Map (Map)
-import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String.NonEmpty (NonEmptyString)
+import Data.Article (Overview, Article)
+import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty as NEString
 import Effect.Aff.Class (class MonadAff)
 import Halogen (Component, ComponentHTML, HalogenM)
 import Halogen as H
+import Halogen.HTML (PlainHTML)
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties as HP
-import Utils (classes)
+import Component.Utils (classes)
 
-type ComponentMonad m a = HalogenM State Action () Output m a
+type ComponentMonad m a = forall o. HalogenM State Action () o m a
 
 type State = Input
 
-type Input = Unit
-
-data Output = Unit
+type Input = Article
 
 data Action
   = Initialize
   | Receive Input
 
-component ∷ ∀ q m. MonadAff m ⇒ Component q Input Output m
+component ∷ ∀ o q m. MonadAff m ⇒ Component q Input o m
 component =
   H.mkComponent
     { initialState
@@ -47,10 +40,23 @@ initialState ∷ Input → State
 initialState = identity
 
 render ∷ ∀ m. State → ComponentHTML Action () m
-render state =
+render article =
   HH.div
     [ classes [ "flex", "flex-col" ] ]
-    []
+    [ HH.fromPlainHTML $ renderArticle article ]
+
+renderArticle :: Article -> PlainHTML
+renderArticle { overview, tags, title } =
+  HH.article
+    [ classes [ "flex", "flex-col" ] ]
+    [ HH.header_ [ HH.h1_ [ HH.text $ NEString.toString title ] ], renderOverview overview ]
+
+renderOverview :: Overview -> PlainHTML
+renderOverview overview =
+  HH.div
+    [ classes [ "flex", "flex-col" ]
+    ]
+    (Array.fromFoldable $ (\s -> HH.p_ [ HH.text s ]) <$> overview)
 
 handleAction ∷ ∀ m. MonadAff m ⇒ Action → ComponentMonad m Unit
 handleAction = case _ of

@@ -2,18 +2,15 @@ module AppM where
 
 import Prelude
 
-import Capability.Navigate (class Navigate, navigate)
+import Capability.Navigate (class Navigate)
 import Data.Route as Route
-import Store (Action(..), Store)
+import Store (Action, Store)
 import Store as Store
-import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect, liftEffect)
-import Effect.Console as Console
-import Effect.Now as Now
 import Halogen as H
-import Halogen.Store.Monad (class MonadStore, StoreT, getStore, runStoreT, updateStore)
+import Halogen.Store.Monad (class MonadStore, StoreT, runStoreT)
 import Routing.Duplex (print)
 import Routing.Hash (setHash)
 import Safe.Coerce (coerce)
@@ -34,5 +31,5 @@ derive newtype instance MonadStore Action Store AppM
 
 instance Navigate AppM where
   navigate =
-    liftEffect <<< setHash <<< print Route.routeCodec
+    liftEffect <<< setHash <<< print Route.codec
 
