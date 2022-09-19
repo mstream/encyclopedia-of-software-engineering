@@ -4,15 +4,10 @@ import Prelude
 
 import Component.Utils (classes)
 import Control.Monad.State (put)
-import Data.Array as Array
-import Data.Article (Overview, Article)
-import Data.Article.Encryption (article)
 import Data.Maybe (Maybe(..))
-import Data.String.NonEmpty as NEString
 import Effect.Aff.Class (class MonadAff)
 import Halogen (Component, ComponentHTML, HalogenM)
 import Halogen as H
-import Halogen.HTML (PlainHTML)
 import Halogen.HTML as HH
 
 type ComponentMonad m a = forall o. HalogenM State Action () o m a

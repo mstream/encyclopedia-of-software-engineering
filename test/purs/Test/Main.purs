@@ -8,11 +8,12 @@ import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (Config, runSpec')
+import Test.Spec.Data as Data
 
 main ∷ Effect Unit
 main = launchAff_ $ runSpec' testConfig [ consoleReporter ]
   do
-    pure unit
+    Data.spec
   where
   testConfig ∷ Config
   testConfig =

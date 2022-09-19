@@ -3,6 +3,7 @@ module Main (main) where
 import Prelude
 
 import AppM (runAppM)
+import Component.Router (Query(..))
 import Component.Router as Router
 import Data.Maybe (Maybe(..))
 import Data.Route as Route
@@ -22,7 +23,7 @@ main = HA.runHalogenAff do
   halogenIO <- runUI rootComponent unit body
   void $ liftEffect $ RH.matchesWith (RD.parse Route.codec) \old new ->
     when (old /= Just new) $ launchAff_ do
-      _response <- halogenIO.query $ H.mkTell $ Router.Navigate new
+      _response <- halogenIO.query $ H.mkTell $ Navigate new
       pure unit
   where
   initialStore = {}
