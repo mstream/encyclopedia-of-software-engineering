@@ -4,7 +4,7 @@ import Prelude
 
 import Component.Sandbox (MakeFormComponent, Presets)
 import Component.Sandbox as Sandbox
-import Component.Utils (classes, textInput)
+import Component.Utils (rangeInput, textInput)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, put)
 import Data.CesarCypher (Config, Key, Message)
@@ -34,10 +34,6 @@ import Formless
 import Formless as Formless
 import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
-import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties (InputType(..))
-import Halogen.HTML.Properties as HP
 import Type.Proxy (Proxy(..))
 
 type ComponentMonad m a = HalogenM
@@ -117,27 +113,13 @@ render presets { actions, fields, formActions, formState } =
         , placeholder: "foo"
         , state: fields.message
         }
-    , HH.div
-        [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
-        [ HH.label_ [ HH.text "key" ]
-        , HH.input
-            [ HP.type_ InputRange
-            , HP.min $ Int.toNumber CesarCypher.minKey
-            , HP.max $ Int.toNumber CesarCypher.maxKey
-            , HP.placeholder "key"
-            , HP.value fields.key.value
-            , HE.onValueInput actions.key.handleChange
-            , HE.onBlur actions.key.handleBlur
-            , classes [ "bg-slate-800" ]
-            ]
-        , HH.text fields.key.value
-        , HH.text case fields.key.result of
-            Just (Left errorMsg) →
-              errorMsg
+    , rangeInput
+        { action: actions.key
+        , label: NEString.nes (Proxy ∷ _ "key")
+        , state: fields.key
+        , valueRange: CesarCypher.minKey /\ CesarCypher.maxKey
 
-            _ →
-              ""
-        ]
+        }
     ]
 
 handleAction ∷ ∀ m. MonadEffect m ⇒ Action → ComponentMonad m Unit

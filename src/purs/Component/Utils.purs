@@ -6,6 +6,7 @@ module Component.Utils
   , maxLength
   , minLength
   , radioGroup
+  , rangeInput
   , size
   , submit
   , textInput
@@ -18,6 +19,7 @@ import DOM.HTML.Indexed (HTMLinput)
 import Data.Const (Const)
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn2, runFn2)
+import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NEString
@@ -123,6 +125,33 @@ radioGroup { label, state, action, options } =
               ]
           , HH.text render
           ]
+    ]
+
+type RangeInput action output =
+  { action ∷ FieldAction action String String output
+  , label ∷ NonEmptyString
+  , state ∷ FieldState String String output
+  , valueRange ∷ Int /\ Int
+  }
+
+rangeInput
+  ∷ ∀ action output slots m
+  . RangeInput action output
+  → ComponentHTML action slots m
+rangeInput { action, label, state, valueRange } =
+  HH.div
+    [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
+    [ HH.label_ [ HH.text $ NEString.toString label ]
+    , HH.input
+        [ HP.type_ InputRange
+        , HP.min $ Int.toNumber $ fst valueRange
+        , HP.max $ Int.toNumber $ snd valueRange
+        , HP.value state.value
+        , HE.onValueInput action.handleChange
+        , HE.onBlur action.handleBlur
+        , classes [ "bg-slate-800" ]
+        ]
+    , HH.text state.value
     ]
 
 type TextInput action output =
