@@ -7,9 +7,10 @@
   "description": "Encyclopedia of Software Engineering",
   "scripts": {
     "build": "npm run test && spago build",
+    "bundle": "npm run build && npm run css && node ./build.js",
     "css": "npm run css:tailwind",
     "css:tailwind": "tailwindcss --config tailwind.config.cjs --input src/css/styles.css --output static/index.generated.css",
-    "bundle": "npm run build && npm run css && node ./build.js",
+    "release": "release-it",
     "serve": "npm run build && npm run css && node ./serve.js",
     "test": "npm run test:purs",
     "test:purs": "spago test"
@@ -17,11 +18,49 @@
   "license": "MIT",
   "devDependencies": {
     "@esbuild-plugins/node-modules-polyfill": "~0.1",
+    "@release-it/conventional-changelog": "^2",
     "esbuild": "~0.15",
     "mermaid": "^9",
+    "release-it": "^14",
     "tailwindcss": "^3"
   },
   "dependencies": {
     "crypto-browserify": "^3"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}",
+      "requireCleanWorkingDir": true
+    },
+    "github": {
+      "release": true,
+      "releaseName": "Release ${version}",
+      "tokenRef": "GITHUB_TOKEN"
+    },
+    "npm": {
+      "publish": "false"
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "infile": "CHANGELOG.md",
+        "preset": {
+          "name": "conventionalcommits",
+          "types": [
+            {
+              "type": "feat",
+              "section": "Features"
+            },
+            {
+              "type": "fix",
+              "section": "Bug Fixes"
+            },
+            {
+              "type": "refactor",
+              "hidden": true
+            }
+          ]
+        }
+      }
+    }
   }
 }
