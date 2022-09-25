@@ -6,13 +6,12 @@ import Capability.Navigate (class Navigate, navigate)
 import Component.Page.Article as Article
 import Component.Page.Home as Home
 import Component.Utils (OpaqueSlot, classes)
-import Data.ArticleId (ArticleId(..))
+import Data.ArticleId (ArticleId)
 import Data.ArticleId as ArticleId
-import Data.ArticleIndex as ArticleIndex
 import Data.Either (hush)
 import Data.Enum (upFromIncluding)
-import Data.List (List(..))
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Paragraph (Segment(..))
 import Data.Route (Route(..))
 import Data.Route as Route
 import Effect.Aff.Class (class MonadAff)
@@ -137,11 +136,10 @@ renderNavigation = HH.aside
   [ classes [ "basis-2/12", "flex", "flex-col" ] ]
   (renderItem <$> upFromIncluding bottom)
   where
-  renderItem articleId = HH.div_
-    [ HH.a
-        [ Article.articleHref articleId ]
-        [ HH.text $ ArticleId.toString $ ArticleId.toTitle articleId ]
-    ]
+  renderItem articleId = Article.renderSegment
+    $ InternalReference
+        (ArticleId.toNonEmptyString $ ArticleId.toTitle articleId)
+        articleId
 
 renderFooter :: PlainHTML
 renderFooter = HH.footer

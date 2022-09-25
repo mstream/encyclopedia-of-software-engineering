@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Article (Article, Tags)
 import Data.Article.AsymmetricEncryption as AsymmetricEncryption
+import Data.Article.CryptographicHashing as CryptographicHashing
 import Data.Article.Encryption as Encryption
 import Data.Article.SymmetricEncryption as SymmetricEncryption
 import Data.ArticleId (ArticleId(..))
@@ -43,6 +44,7 @@ relatedArticlesById articleId =
 articleById :: ArticleId -> Article
 articleById = case _ of
   AsymmetricEncryption -> AsymmetricEncryption.article
+  CryptographicHashing -> CryptographicHashing.article
   Encryption -> Encryption.article
   SymmetricEncryption -> SymmetricEncryption.article
 

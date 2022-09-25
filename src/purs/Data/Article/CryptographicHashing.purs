@@ -1,9 +1,10 @@
-module Data.Article.AsymmetricEncryption (article) where
+module Data.Article.CryptographicHashing (article) where
 
 import Prelude
 
 import Data.Paragraph as Paragraph
 import Data.Article as Article
+import Component.Sandbox.HashCollision as HashCollision
 import Data.Array.NonEmpty as NEArray
 import Data.Article (Article, Section, Overview)
 import Data.Paragraph (Segment(..))
@@ -15,7 +16,7 @@ import Type.Proxy (Proxy(..))
 article :: Article
 article =
   { overview
-  , sandboxes: []
+  , sandboxes: [ HashCollision.component ]
   , sections
   , tags: Set.fromFoldable [ Cryptography ]
   }
@@ -24,7 +25,9 @@ overview :: Overview
 overview = Article.unsafeOverview [ Paragraph.unsafeParagraph [ Text "TODO(Overview)" ] ]
 
 sections :: Array Section
-sections = [ typesSection ]
+sections =
+  [ typesSection
+  ]
 
 typesSection :: Section
 typesSection =

@@ -1,23 +1,43 @@
-module Component.Sandbox (FormComponent, SandboxComponent, SimulationComponent, component) where
+module Component.Sandbox
+  ( FormComponent
+  , Input
+  , MakeFormComponent
+  , Preset
+  , Presets
+  , Query
+  , SandboxComponent
+  , SimulationComponent
+  , component
+  ) where
 
 import Prelude
 
-import Component.Utils (OpaqueSlot, classes)
+import Component.Utils (OpaqueSlot, button, classes)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
+import Data.String.NonEmpty as NEString
 import Data.Const (Const)
 import Data.Maybe (Maybe(..), isJust)
+import Data.NonEmpty (NonEmpty)
+import Data.String.NonEmpty (NonEmptyString)
+import Data.Tuple.Nested (type (/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Exception (Error)
 import Halogen (Component, ComponentHTML, HalogenM, Slot)
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
 import Type.Proxy (Proxy(..))
 
 type SandboxComponent m =
-  Component (Const Void) Unit Void m
+  Component Query Input Void m
+
+type MakeFormComponent config m =
+  NonEmpty Array (Preset config) -> FormComponent config m
+
+type Presets config = NonEmpty Array (Preset config)
+
+type Preset config = NonEmptyString /\ config
 
 type FormComponent config m =
   Component (Const Void) Unit config m
@@ -79,11 +99,14 @@ render formComponent simulationComponent state =
         [ classes [ if isJust state then "hidden" else "block" ] ]
         [ HH.slot (Proxy :: _ "form") unit formComponent unit HandleForm ]
     , HH.div
-        [ classes [ if isJust state then "block" else "hidden" ] ]
-        [ HH.button
-            [ HE.onClick $ const ResetSimulation ]
-            [ HH.text "Reset" ]
+        [ classes
+            [ if isJust state then "block" else "hidden"
+            , "flex"
+            , "flex-row"
+            , "justify-center"
+            ]
         ]
+        [ button { action: ResetSimulation, label: NEString.nes (Proxy :: _ "Reset") } ]
     , case state of
         Nothing ->
           HH.text ""

@@ -1,4 +1,4 @@
-module Component.Page.Article (articleHref, component) where
+module Component.Page.Article (articleHref, component, renderSegment) where
 
 import Prelude
 
@@ -14,7 +14,7 @@ import Data.ArticleIndex as ArticleIndex
 import Data.Foldable (class Foldable)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
 import Data.Maybe (Maybe(..))
-import Data.Paragraph (Segment(..), Paragraph)
+import Data.Paragraph (Paragraph, Segment(..))
 import Data.Route (Route(..))
 import Data.Route as Route
 import Data.String.NonEmpty as NEString
@@ -80,16 +80,17 @@ renderRelatedArticles articleIds =
   HH.section
     [ classes [ "flex", "flex-col" ] ]
     ( [ HH.h2
-          [ classes [ "text-2xl" ] ]
+          [ classes [ "mb-3", "text-2xl" ] ]
           [ HH.text "Related articles" ]
       ]
         <> (Array.fromFoldable $ renderRelatedArticle <$> articleIds)
     )
-  where
-  renderRelatedArticle articleId =
-    HH.a
-      [ articleHref articleId ]
-      [ HH.text $ ArticleId.toString $ ArticleId.toTitle articleId ]
+
+renderRelatedArticle :: ArticleId -> PlainHTML
+renderRelatedArticle articleId = renderSegment
+  $ InternalReference
+      (ArticleId.toNonEmptyString $ ArticleId.toTitle articleId)
+      articleId
 
 renderArticle :: Title -> Article -> PlainHTML
 renderArticle title { overview, sections } =
@@ -132,11 +133,14 @@ renderSection { paragraphs, title } =
 
 renderSandbox :: forall m. MonadAff m => Int -> (SandboxComponent Aff) -> ComponentView m
 renderSandbox idx sandbox =
-  HH.slot_
-    (Proxy :: _ "sandbox")
-    idx
-    (H.hoist liftAff sandbox)
-    unit
+  HH.div
+    [ classes [ "mt-4" ] ]
+    [ HH.slot_
+        (Proxy :: _ "sandbox")
+        idx
+        (H.hoist liftAff sandbox)
+        unit
+    ]
 
 renderOverview :: Overview -> PlainHTML
 renderOverview overview =

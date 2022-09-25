@@ -2,8 +2,8 @@ module Component.Sandbox.CesarCypher.Simulation (component) where
 
 import Prelude
 
-import Component.Mermaid (DiagramDef(..))
 import Component.Mermaid as Mermaid
+import Component.Sandbox (SimulationComponent)
 import Component.Utils (OpaqueSlot)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
@@ -12,14 +12,15 @@ import Data.CesarCypher (Character(..), Key(..), Message(..), Config)
 import Data.CesarCypher as CesarCypher
 import Data.Char as Char
 import Data.Const (Const)
-import Data.FlowChart (FlowChartDef(..), Orientation(..), Segment(..))
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Maybe (Maybe(..), maybe)
+import Data.Mermaid (DiagramDef(..))
+import Data.Mermaid.FlowChart (FlowChartDef(..), Orientation(..), Segment(..))
 import Data.String as String
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Exception (Error)
-import Halogen (Component, ComponentHTML, HalogenM)
+import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML as HH
 import Type.Proxy (Proxy(..))
@@ -40,7 +41,11 @@ type State = Input
 
 data Action = Receive Input
 
-component :: forall m. MonadAff m => MonadThrow Error m => Component Query Input Output m
+component
+  :: forall m
+   . MonadAff m
+  => MonadThrow Error m
+  => SimulationComponent Config m
 component = H.mkComponent
   { initialState: identity
   , render
@@ -64,16 +69,16 @@ handleAction = case _ of
     put input
 
 diagramDef :: Message -> Key -> DiagramDef
-diagramDef (Message nea) k =
+diagramDef (Message nea) key =
   FlowChart $ FlowChartDef TopToBottom segments
   where
   segments :: Array Segment
   segments =
     [ SubGraph "input" [ Line $ String.joinWith "; " $ Array.fromFoldable $ inputNodeDef `mapWithIndex` nea ]
-    , SubGraph "encoded" [ Line $ String.joinWith "; " $ Array.fromFoldable $ encryptedNodeDef k `mapWithIndex` nea ]
+    , SubGraph "encoded" [ Line $ String.joinWith "; " $ Array.fromFoldable $ encryptedNodeDef key `mapWithIndex` nea ]
     , SubGraph "decoded" [ Line $ String.joinWith "; " $ Array.fromFoldable $ decryptedNodeDef `mapWithIndex` nea ]
-    ] <> (Line <$> (Array.fromFoldable $ encryptionArrow k `mapWithIndex` nea))
-      <> (Line <$> (Array.fromFoldable $ decryptionArrow k `mapWithIndex` nea))
+    ] <> (Line <$> (Array.fromFoldable $ encryptionArrow key `mapWithIndex` nea))
+      <> (Line <$> (Array.fromFoldable $ decryptionArrow key `mapWithIndex` nea))
       <> [ Line "linkStyle default stroke:green" ]
 
   inputNodeDef :: Int -> Character -> String

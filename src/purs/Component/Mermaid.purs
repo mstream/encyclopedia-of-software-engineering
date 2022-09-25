@@ -1,15 +1,15 @@
-module Component.Mermaid (DiagramDef(..), component) where
+module Component.Mermaid (component) where
 
 import Prelude
 
-import Data.FlowChart as FlowChart
+import Data.Mermaid (DiagramDef)
+import Data.Mermaid as Mermaid
 import Component.RawHTML as RawHTML
 import Component.Utils (RawHTML(..), OpaqueSlot)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, modify_)
 import Control.Promise (Promise, toAffE)
 import Data.Const (Const)
-import Data.FlowChart (FlowChartDef)
 import Data.Function.Uncurried (Fn2, runFn2)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -19,13 +19,6 @@ import Halogen (Component, ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML as HH
 import Type.Proxy (Proxy(..))
-
-data DiagramDef = FlowChart FlowChartDef
-
-toString :: DiagramDef -> String
-toString = case _ of
-  FlowChart def ->
-    FlowChart.toString def
 
 type ComponentMonad m a = HalogenM State Action ChildSlots Void m a
 type ComponentView m = ComponentHTML Action ChildSlots m
@@ -77,7 +70,7 @@ render state = case state.svgCode of
 generateDiagram :: forall m. MonadAff m => DiagramDef -> m SvgCode
 generateDiagram = map RawHTML
   <<< renderDiagramSvgCode "svgId"
-  <<< toString
+  <<< Mermaid.toString
 
 renderDiagramSvgCode :: forall m. MonadAff m => String -> String -> m String
 renderDiagramSvgCode elementId diagramDef = liftAff

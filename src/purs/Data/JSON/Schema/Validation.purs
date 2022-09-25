@@ -4,11 +4,7 @@ import Prelude
 
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as A
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
 import Data.JSON.Schema.Core (ArraySchemaFields, BooleanSchemaFields, NullSchemaFields, NumberSchemaFields, Schema(..), StringSchemaFields, ObjectSchemaFields)
-import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested (type (/\), (/\))
-import Foreign.Object as Object
 
 type ValidationError = String
 

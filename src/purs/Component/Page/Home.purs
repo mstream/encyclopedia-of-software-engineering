@@ -36,7 +36,7 @@ initialState ∷ Input → State
 initialState = identity
 
 render ∷ ∀ m. State → ComponentHTML Action () m
-render state =
+render _ =
   HH.div
     [ classes [ "flex", "flex-col" ] ]
     [ HH.text "Home" ]

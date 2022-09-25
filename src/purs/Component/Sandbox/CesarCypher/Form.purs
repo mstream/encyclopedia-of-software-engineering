@@ -2,7 +2,7 @@ module Component.Sandbox.CesarCypher.Form (Output(..), Query, component) where
 
 import Prelude
 
-import Component.Sandbox (FormComponent)
+import Component.Sandbox (MakeFormComponent)
 import Component.Utils (classes, maxLength, minLength, size)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
@@ -12,12 +12,14 @@ import Data.Const (Const)
 import Data.Either (Either(..))
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
+import Data.NonEmpty (head)
+import Data.Tuple (snd)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Exception (Error)
-import Formless (FieldAction, FieldInput, FieldOutput, FieldState, FormOutput, FormQuery, FormlessAction, FormContext)
+import Formless (FieldAction, FieldInput, FieldOutput, FieldState, FormContext, FormOutput, FormQuery, FormlessAction, FieldResult)
 import Formless as Formless
-import Halogen (Component, ComponentHTML, HalogenM)
+import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -43,13 +45,14 @@ type FormFields f =
   , key :: f String String Key
   )
 
-type FormInputs = { | FormFields FieldInput }
-type FormOutputs = { | FormFields FieldOutput }
+type FormInputs = FormFields FieldInput
+type FormOutputs = FormFields FieldOutput
+type FormResults = FormFields FieldResult
 
 type Form = FormContext
   (FormFields FieldState)
   (FormFields (FieldAction Action))
-  Unit
+  Input
   Action
 
 type Input = Unit
@@ -69,17 +72,20 @@ component
   :: forall m
    . MonadAff m
   => MonadThrow Error m
-  => FormComponent Config m
-component = Formless.formless { liftAction: Eval } initialInputs
-  $ H.mkComponent
-      { initialState: identity
-      , render
-      , eval: H.mkEval $ H.defaultEval
-          { handleQuery = handleQuery
-          , handleAction = handleAction
-          , receive = Just <<< Receive
-          }
-      }
+  => MakeFormComponent Config m
+component presets =
+  Formless.formless
+    { liftAction: Eval }
+    (toInputs $ snd $ head presets)
+    $ H.mkComponent
+        { initialState: identity
+        , render
+        , eval: H.mkEval $ H.defaultEval
+            { handleQuery = handleQuery
+            , handleAction = handleAction
+            , receive = Just <<< Receive
+            }
+        }
 
 render :: forall m. Form -> ComponentView m
 render { actions, fields, formActions, formState } =
@@ -144,21 +150,14 @@ handleAction = case _ of
 
 handleQuery
   :: forall a m
-   . FormQuery Query
-       _
-       _
-       _
-       a
+   . FormQuery Query FormInputs FormResults FormOutputs a
   -> ComponentMonad m (Maybe a)
 handleQuery = do
   Formless.handleSubmitValidate
-    handleSuccess
+    Formless.raise
     Formless.validate
     { key: validateKey, message: validateMessage }
   where
-  handleSuccess outputs =
-    Formless.raise { key: outputs.key, message: outputs.message }
-
   validateKey = Int.fromString >>> case _ of
     Nothing ->
       Left "key is not an integer"
@@ -168,5 +167,8 @@ handleQuery = do
 
   validateMessage = CesarCypher.message
 
-initialInputs :: FormInputs
-initialInputs = { key: "1", message: "hello world" }
+toInputs :: Config -> Record FormInputs
+toInputs { key, message } =
+  { key: show $ CesarCypher.toInt key
+  , message: CesarCypher.toString message
+  }

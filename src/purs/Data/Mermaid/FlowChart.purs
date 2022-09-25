@@ -1,4 +1,4 @@
-module Data.FlowChart (FlowChartDef(..), Orientation(..), Segment(..), toString) where
+module Data.Mermaid.FlowChart (FlowChartDef(..), Orientation(..), Segment(..), toString) where
 
 import Prelude
 

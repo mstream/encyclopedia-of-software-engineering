@@ -1,4 +1,11 @@
-module Data.ArticleId (ArticleId(..), Title, codec, toTitle, toString) where
+module Data.ArticleId
+  ( ArticleId(..)
+  , Title
+  , codec
+  , toNonEmptyString
+  , toTitle
+  , toString
+  ) where
 
 import Prelude
 
@@ -22,6 +29,7 @@ import Utils (allValues)
 
 data ArticleId
   = AsymmetricEncryption
+  | CryptographicHashing
   | Encryption
   | SymmetricEncryption
 
@@ -50,12 +58,18 @@ derive newtype instance Eq Title
 derive newtype instance Ord Title
 
 toString :: Title -> String
-toString (Title nes) = NEString.toString nes
+toString = NEString.toString <<< toNonEmptyString
+
+toNonEmptyString :: Title -> NonEmptyString
+toNonEmptyString (Title nes) = nes
 
 toTitle :: ArticleId -> Title
 toTitle = Title <<< case _ of
   AsymmetricEncryption ->
     NEString.nes (Proxy :: _ "Asymmetric Encryption")
+
+  CryptographicHashing ->
+    NEString.nes (Proxy :: _ "Cryptographic Hashing")
 
   Encryption ->
     NEString.nes (Proxy :: _ "Encryption")

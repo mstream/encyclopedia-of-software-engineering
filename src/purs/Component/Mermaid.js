@@ -1,10 +1,10 @@
 import mermaid from 'mermaid'
 
-mermaid.mermaidAPI.initialize({ startOnLoad: false }); 
+mermaid.mermaidAPI.initialize({ startOnLoad: false });
 
 export function renderDiagramSvgCodeImpl(elementId, diagramDef) {
-  return function () {
-    return new Promise((resolve,reject) => {
+  return function() {
+    return new Promise((resolve, reject) => {
       console.info(diagramDef)
       const cb = svgCode => resolve(svgCode)
       try {
@@ -18,8 +18,8 @@ export function renderDiagramSvgCodeImpl(elementId, diagramDef) {
           reject(Error('unexpected error'))
         }
       }
-    }) 
-  }  
+    })
+  }
 }
 
 
