@@ -37,6 +37,7 @@ let searchTrie =
         , "tuples"
         , "unfoldable"
         , "web-dom"
+        , "web-events"
         , "web-html"
         ]
       , repo = "https://github.com/klntsky/purescript-search-trie.git"
@@ -84,6 +85,7 @@ in  { name = "encyclopedia of software engineering"
       , "transformers"
       , "tuples"
       , "unfoldable"
+      , "web-events"
       , "web-html"
       ]
     , packages = ./packages.dhall with search-trie = searchTrie

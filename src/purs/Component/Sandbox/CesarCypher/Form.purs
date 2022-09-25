@@ -2,11 +2,11 @@ module Component.Sandbox.CesarCypher.Form (Output(..), Query, component) where
 
 import Prelude
 
-import Component.Sandbox (MakeFormComponent)
+import Component.Sandbox (MakeFormComponent, Presets)
 import Component.Sandbox as Sandbox
 import Component.Utils (classes, maxLength, minLength, size)
 import Control.Monad.Error.Class (class MonadThrow)
-import Control.Monad.State (put)
+import Control.Monad.State (get, put)
 import Data.CesarCypher (Config, Key, Message)
 import Data.CesarCypher as CesarCypher
 import Data.Const (Const)
@@ -76,7 +76,8 @@ type Query = Const Void
 type State = Form
 
 data Action
-  = Eval (FormlessAction (FormFields FieldState))
+  = ApplyPreset Config
+  | Eval (FormlessAction (FormFields FieldState))
   | Receive Form
 
 component
@@ -90,7 +91,7 @@ component presets =
     (toInputs $ snd $ head presets)
     $ H.mkComponent
         { initialState: identity
-        , render
+        , render: render presets
         , eval: H.mkEval $ H.defaultEval
             { handleQuery = handleQuery
             , handleAction = handleAction
@@ -98,10 +99,13 @@ component presets =
             }
         }
 
-render ∷ ∀ m. Form → ComponentView m
-render { actions, fields, formActions, formState } =
-  HH.form
-    [ HE.onSubmit formActions.handleSubmit ]
+render ∷ ∀ m. Presets Config → Form → ComponentView m
+render presets { actions, fields, formActions, formState } =
+  Sandbox.renderForm
+    formActions.handleSubmit
+    ApplyPreset
+    formState
+    presets
     [ HH.div
         [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
         [ HH.label_ [ HH.text "message" ]
@@ -144,11 +148,17 @@ render { actions, fields, formActions, formState } =
             _ →
               ""
         ]
-    , Sandbox.submitPanel formState
     ]
 
 handleAction ∷ ∀ m. MonadEffect m ⇒ Action → ComponentMonad m Unit
 handleAction = case _ of
+  ApplyPreset config → do
+    { formActions } ← get
+    handleAction
+      $ formActions.setFields
+      $ Formless.mkFieldStates
+      $ toInputs config
+
   Eval formAction →
     Formless.eval formAction
 

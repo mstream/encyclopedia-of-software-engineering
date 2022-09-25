@@ -7,7 +7,7 @@ module Component.Sandbox.HashCollision.Form
 import Prelude
 
 import Component.Sandbox (MakeFormComponent, Preset, Presets)
-import Component.Sandbox as SandboxComponent
+import Component.Sandbox as Sandbox
 import Component.Utils (button, classes, maxLength, radioGroup, size)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, put)
@@ -106,10 +106,12 @@ component presets =
 
 render ∷ ∀ m. Presets Config → Form → ComponentView m
 render presets { actions, fields, formActions, formState } =
-  HH.form
-    [ HE.onSubmit formActions.handleSubmit ]
-    [ renderPresets presets
-    , radioGroup
+  Sandbox.renderForm
+    formActions.handleSubmit
+    ApplyPreset
+    formState
+    presets
+    [ radioGroup
         { action: actions.algorithm
         , label: "algorithm"
         , options:
@@ -172,7 +174,6 @@ render presets { actions, fields, formActions, formState } =
             _ →
               ""
         ]
-    , SandboxComponent.submitPanel formState
     ]
 
 renderPresets

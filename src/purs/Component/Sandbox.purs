@@ -8,7 +8,7 @@ module Component.Sandbox
   , SandboxComponent
   , SimulationComponent
   , component
-  , submitPanel
+  , renderForm
   ) where
 
 import Prelude
@@ -16,12 +16,13 @@ import Prelude
 import Component.Utils (OpaqueSlot, button, classes, submit)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
+import Data.Array as Array
 import Data.Const (Const)
 import Data.Maybe (Maybe(..), isJust, isNothing, maybe)
-import Data.NonEmpty (NonEmpty)
+import Data.NonEmpty (NonEmpty, fromNonEmpty)
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NEString
-import Data.Tuple.Nested (type (/\))
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Exception (Error)
@@ -29,7 +30,9 @@ import Formless (FormState)
 import Halogen (Component, ComponentHTML, HalogenM, Slot)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Type.Proxy (Proxy(..))
+import Web.Event.Internal.Types (Event)
 
 type SandboxComponent m =
   Component Query Input Void m
@@ -70,6 +73,52 @@ type State config = Maybe config
 data Action config
   = HandleForm config
   | ResetSimulation
+
+renderForm
+  ∷ ∀ action config slots m
+  . (Event → action)
+  → (config → action)
+  → FormState
+  → Presets config
+  → Array (ComponentHTML action slots m)
+  → ComponentHTML action slots m
+renderForm
+  handleSubmit
+  handleApplyPreset
+  formState
+  presets
+  fieldElements =
+  HH.form
+    [ HE.onSubmit handleSubmit ]
+    ( renderPresets handleApplyPreset presets
+        `Array.cons` fieldElements
+        `Array.snoc` submitPanel formState
+    )
+
+renderPresets
+  ∷ ∀ action config slots m
+  . (config → action)
+  → Presets config
+  → ComponentHTML action slots m
+renderPresets handleApplyPreset =
+  HH.div [ classes [ "flex", "flex-col", "mb-4" ] ]
+    <<< fromNonEmpty \preset presets →
+      if Array.null presets then [ HH.text "" ]
+      else
+        [ HH.label_ [ HH.text "Configuration Presets" ]
+        , HH.div [ classes [ "flex", "flex-row", "flex-wrap" ] ]
+            $ [ renderPreset handleApplyPreset preset ]
+                <> (renderPreset handleApplyPreset <$> presets)
+                <> [ HH.hr_ ]
+        ]
+
+renderPreset
+  ∷ ∀ action config slots m
+  . (config → action)
+  → Preset config
+  → ComponentHTML action slots m
+renderPreset handleApplyPreset (presetName /\ config) =
+  button { action: handleApplyPreset config, label: presetName }
 
 component
   ∷ ∀ config m
@@ -159,3 +208,4 @@ simulationPanel simulationComponent config = HH.div
       simulationComponent
       config
   ]
+
