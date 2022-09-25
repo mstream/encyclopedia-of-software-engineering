@@ -9,8 +9,8 @@
     "build": "npm run test && spago build",
     "css": "npm run css:tailwind",
     "css:tailwind": "tailwindcss --config tailwind.config.cjs --input src/css/styles.css --output static/index.generated.css",
-    "bundle": "node ./build.js",
-    "serve": "npm run css && npm run build && node ./serve.js",
+    "bundle": "npm run build && npm run css && node ./build.js",
+    "serve": "npm run build && npm run css && node ./serve.js",
     "test": "npm run test:purs",
     "test:purs": "spago test"
   },
