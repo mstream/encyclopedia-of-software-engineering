@@ -8,6 +8,7 @@ module Component.Utils
   , radioGroup
   , size
   , submit
+  , textInput
   , unsafeSetInnerHtml
   ) where
 
@@ -15,13 +16,17 @@ import Prelude
 
 import DOM.HTML.Indexed (HTMLinput)
 import Data.Const (Const)
+import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn2, runFn2)
+import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NEString
+import Data.Tuple (fst, snd)
+import Data.Tuple.Nested (type (/\))
 import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
 import Formless (FieldAction, FieldState, FormState)
-import Halogen (ClassName(..), PropName(..), Slot, ComponentHTML)
+import Halogen (ClassName(..), ComponentHTML, PropName(..), Slot)
 import Halogen.HTML (IProp)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -33,27 +38,28 @@ newtype RawHTML = RawHTML String
 
 type OpaqueSlot slot = Slot (Const Void) Void slot
 
-maxLength :: forall i r. Int -> IProp (maxLength :: Int | r) i
+maxLength ∷ ∀ i r. Int → IProp (maxLength ∷ Int | r) i
 maxLength = HP.prop $ PropName "maxLength"
 
-minLength :: forall i r. Int -> IProp (minLength :: Int | r) i
+minLength ∷ ∀ i r. Int → IProp (minLength ∷ Int | r) i
 minLength = HP.prop $ PropName "minLength"
 
-size :: forall i r. Int -> IProp (size :: Int | r) i
+size ∷ ∀ i r. Int → IProp (size ∷ Int | r) i
 size = HP.prop $ PropName "size"
 
 classes ∷ ∀ i r. Array String → IProp (class ∷ String | r) i
 classes = HP.classes <<< map ClassName
 
-unsafeSetInnerHtml :: forall m. MonadEffect m => HTMLElement -> RawHTML -> m Unit
+unsafeSetInnerHtml ∷ ∀ m. MonadEffect m ⇒ HTMLElement → RawHTML → m Unit
 unsafeSetInnerHtml element (RawHTML s) = liftEffect
   $ runFn2 unsafeSetInnerHtmlImpl element s
 
-foreign import unsafeSetInnerHtmlImpl :: Fn2 HTMLElement String (Effect Unit)
+foreign import unsafeSetInnerHtmlImpl
+  ∷ Fn2 HTMLElement String (Effect Unit)
 
-type Button action = { action :: action, label :: NonEmptyString }
+type Button action = { action ∷ action, label ∷ NonEmptyString }
 
-button :: forall action slots m. Button action -> ComponentHTML action slots m
+button ∷ ∀ action slots m. Button action → ComponentHTML action slots m
 button { action, label } =
   HH.button
     [ HE.onClick $ const action
@@ -68,9 +74,9 @@ button { action, label } =
     ]
     [ HH.text $ NEString.toString label ]
 
-type Submit = { formState :: FormState, label :: NonEmptyString }
+type Submit = { formState ∷ FormState, label ∷ NonEmptyString }
 
-submit :: forall action slots m. Submit -> ComponentHTML action slots m
+submit ∷ ∀ action slots m. Submit → ComponentHTML action slots m
 submit { formState, label } =
   HH.input
     [ HP.disabled $ formState.errorCount > 0
@@ -86,26 +92,26 @@ submit { formState, label } =
     ]
 
 type RadioGroup action input output =
-  { label :: String
-  , state :: FieldState input Void output
-  , action :: FieldAction action input Void output
-  , options ::
+  { label ∷ NonEmptyString
+  , state ∷ FieldState input Void output
+  , action ∷ FieldAction action input Void output
+  , options ∷
       Array
-        { option :: input
-        , render :: String
-        , props :: Array (IProp HTMLinput action)
+        { option ∷ input
+        , render ∷ String
+        , props ∷ Array (IProp HTMLinput action)
         }
   }
 
 radioGroup
-  :: forall input output action slots m
-   . Eq input
-  => RadioGroup action input output
-  -> ComponentHTML action slots m
+  ∷ ∀ input output action slots m
+  . Eq input
+  ⇒ RadioGroup action input output
+  → ComponentHTML action slots m
 radioGroup { label, state, action, options } =
   HH.div_
-    [ HH.label_ [ HH.text label ]
-    , HH.fieldset_ $ options <#> \{ option, render, props } ->
+    [ HH.label_ [ HH.text $ NEString.toString label ]
+    , HH.fieldset_ $ options <#> \{ option, render, props } →
         HH.label
           [ classes [ "m-1", "p-1" ] ]
           [ HH.input $ flip append props
@@ -117,4 +123,39 @@ radioGroup { label, state, action, options } =
               ]
           , HH.text render
           ]
+    ]
+
+type TextInput action output =
+  { action ∷ FieldAction action String String output
+  , label ∷ NonEmptyString
+  , lengthRange ∷ Int /\ Int
+  , placeholder ∷ String
+  , state ∷ FieldState String String output
+  }
+
+textInput
+  ∷ ∀ action output slots m
+  . TextInput action output
+  → ComponentHTML action slots m
+textInput { action, label, lengthRange, placeholder, state } =
+  HH.div
+    [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
+    [ HH.label_ [ HH.text $ NEString.toString label ]
+    , HH.input
+        [ HP.type_ InputText
+        , HP.placeholder placeholder
+        , size $ snd lengthRange
+        , HP.value state.value
+        , HE.onValueInput action.handleChange
+        , HE.onBlur action.handleBlur
+        , classes [ "bg-slate-800" ]
+        , maxLength $ snd lengthRange
+        , minLength $ fst lengthRange
+        ]
+    , HH.text case state.result of
+        Just (Left errorMsg) →
+          errorMsg
+
+        _ →
+          ""
     ]

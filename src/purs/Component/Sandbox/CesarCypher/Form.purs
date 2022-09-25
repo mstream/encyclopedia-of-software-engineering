@@ -4,7 +4,7 @@ import Prelude
 
 import Component.Sandbox (MakeFormComponent, Presets)
 import Component.Sandbox as Sandbox
-import Component.Utils (classes, maxLength, minLength, size)
+import Component.Utils (classes, textInput)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, put)
 import Data.CesarCypher (Config, Key, Message)
@@ -12,9 +12,11 @@ import Data.CesarCypher as CesarCypher
 import Data.Const (Const)
 import Data.Either (Either(..))
 import Data.Int as Int
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.NonEmpty (head)
+import Data.String.NonEmpty as NEString
 import Data.Tuple (snd)
+import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Exception (Error)
@@ -36,6 +38,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (InputType(..))
 import Halogen.HTML.Properties as HP
+import Type.Proxy (Proxy(..))
 
 type ComponentMonad m a = HalogenM
   State
@@ -106,27 +109,14 @@ render presets { actions, fields, formActions, formState } =
     ApplyPreset
     formState
     presets
-    [ HH.div
-        [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
-        [ HH.label_ [ HH.text "message" ]
-        , HH.input
-            [ HP.type_ InputText
-            , HP.placeholder "message"
-            , size CesarCypher.maxMessageLength
-            , HP.value fields.message.value
-            , HE.onValueInput actions.message.handleChange
-            , HE.onBlur actions.message.handleBlur
-            , classes [ "bg-slate-800" ]
-            , maxLength CesarCypher.maxMessageLength
-            , minLength CesarCypher.minMessageLength
-            ]
-        , HH.text case fields.message.result of
-            Just (Left errorMsg) →
-              errorMsg
-
-            _ →
-              ""
-        ]
+    [ textInput
+        { action: actions.message
+        , label: NEString.nes (Proxy ∷ _ "message")
+        , lengthRange: CesarCypher.minMessageLength
+            /\ CesarCypher.maxMessageLength
+        , placeholder: "foo"
+        , state: fields.message
+        }
     , HH.div
         [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
         [ HH.label_ [ HH.text "key" ]
@@ -173,16 +163,10 @@ handleQuery = do
   Formless.handleSubmitValidate
     Formless.raise
     Formless.validate
-    { key: validateKey, message: validateMessage }
-  where
-  validateKey = Int.fromString >>> case _ of
-    Nothing →
-      Left "key is not an integer"
-
-    Just i →
-      CesarCypher.key i
-
-  validateMessage = CesarCypher.message
+    { key: maybe (Left "key is not an integer") CesarCypher.key
+        <<< Int.fromString
+    , message: CesarCypher.message
+    }
 
 toInputs ∷ Config → Record FormInputs
 toInputs { key, message } =

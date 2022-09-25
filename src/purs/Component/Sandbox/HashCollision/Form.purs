@@ -6,18 +6,18 @@ module Component.Sandbox.HashCollision.Form
 
 import Prelude
 
-import Component.Sandbox (MakeFormComponent, Preset, Presets)
+import Component.Sandbox (MakeFormComponent, Presets)
 import Component.Sandbox as Sandbox
-import Component.Utils (button, classes, maxLength, radioGroup, size)
+import Component.Utils (radioGroup, textInput)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, put)
-import Data.Array as Array
 import Data.Const (Const)
 import Data.Either (Either(..))
 import Data.HashCollision (Algorithm(..), Config)
 import Data.HashCollision as HashCollision
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty (fromNonEmpty, head)
+import Data.NonEmpty (head)
+import Data.String.NonEmpty as NEString
 import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
@@ -37,10 +37,7 @@ import Formless
 import Formless as Formless
 import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
-import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties (InputType(..))
-import Halogen.HTML.Properties as HP
+import Type.Proxy (Proxy(..))
 
 type ComponentMonad m a = HalogenM
   State
@@ -113,7 +110,7 @@ render presets { actions, fields, formActions, formState } =
     presets
     [ radioGroup
         { action: actions.algorithm
-        , label: "algorithm"
+        , label: NEString.nes (Proxy ∷ _ "algorithm")
         , options:
             [ { option: Md5
               , render: HashCollision.toString Md5
@@ -134,66 +131,23 @@ render presets { actions, fields, formActions, formState } =
             ]
         , state: fields.algorithm
         }
-    , HH.div
-        [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
-        [ HH.label_ [ HH.text "input 1" ]
-        , HH.input
-            [ HP.type_ InputText
-            , HP.placeholder "message"
-            , size HashCollision.maxInputLength
-            , HP.value fields.input1.value
-            , HE.onValueInput actions.input1.handleChange
-            , HE.onBlur actions.input1.handleBlur
-            , classes [ "bg-slate-800" ]
-            , maxLength HashCollision.maxInputLength
-            ]
-        , HH.text case fields.input1.result of
-            Just (Left errorMsg) →
-              errorMsg
-
-            _ →
-              ""
-        ]
-    , HH.div
-        [ classes [ "flex", "flex-col", "mx-1", "my-2" ] ]
-        [ HH.label_ [ HH.text "input 2" ]
-        , HH.input
-            [ HP.type_ InputText
-            , HP.placeholder "message"
-            , size HashCollision.maxInputLength
-            , HP.value fields.input2.value
-            , HE.onValueInput actions.input2.handleChange
-            , HE.onBlur actions.input2.handleBlur
-            , classes [ "bg-slate-800" ]
-            , maxLength HashCollision.maxInputLength
-            ]
-        , HH.text case fields.input2.result of
-            Just (Left errorMsg) →
-              errorMsg
-
-            _ →
-              ""
-        ]
+    , textInput
+        { action: actions.input1
+        , label: NEString.nes (Proxy ∷ _ "input 1")
+        , lengthRange: HashCollision.minInputLength
+            /\ HashCollision.maxInputLength
+        , placeholder: "foo"
+        , state: fields.input1
+        }
+    , textInput
+        { action: actions.input2
+        , label: NEString.nes (Proxy ∷ _ "input 2")
+        , lengthRange: HashCollision.minInputLength
+            /\ HashCollision.maxInputLength
+        , placeholder: "foo"
+        , state: fields.input2
+        }
     ]
-
-renderPresets
-  ∷ ∀ m
-  . Presets Config
-  → ComponentView m
-renderPresets = HH.div [ classes [ "flex", "flex-col", "mb-4" ] ]
-  <<< fromNonEmpty \preset presets →
-    if Array.null presets then [ HH.text "" ]
-    else
-      [ HH.label_ [ HH.text "Configuration Presets" ]
-      , HH.div [ classes [ "flex", "flex-row", "flex-wrap" ] ]
-          $ [ renderPreset preset ]
-              <> (renderPreset <$> presets)
-              <> [ HH.hr_ ]
-      ]
-
-renderPreset ∷ ∀ m. Preset Config → ComponentView m
-renderPreset (presetName /\ config) =
-  button { action: ApplyPreset config, label: presetName }
 
 handleAction ∷ ∀ m. MonadEffect m ⇒ Action → ComponentMonad m Unit
 handleAction = case _ of
@@ -215,12 +169,8 @@ handleQuery = do
   Formless.handleSubmitValidate
     Formless.raise
     Formless.validate
-    { algorithm: validateAlgorithm
-    , input1: validateInput
-    , input2: validateInput
+    { algorithm: Right
+    , input1: HashCollision.input
+    , input2: HashCollision.input
     }
-  where
-  validateAlgorithm = Right
-
-  validateInput = HashCollision.input
 
