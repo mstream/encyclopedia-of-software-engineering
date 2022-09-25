@@ -3,6 +3,7 @@ module Component.Sandbox.CesarCypher.Form (Output(..), Query, component) where
 import Prelude
 
 import Component.Sandbox (MakeFormComponent)
+import Component.Sandbox as Sandbox
 import Component.Utils (classes, maxLength, minLength, size)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
@@ -17,7 +18,17 @@ import Data.Tuple (snd)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Exception (Error)
-import Formless (FieldAction, FieldInput, FieldOutput, FieldState, FormContext, FormOutput, FormQuery, FormlessAction, FieldResult)
+import Formless
+  ( FieldAction
+  , FieldInput
+  , FieldOutput
+  , FieldResult
+  , FieldState
+  , FormContext
+  , FormOutput
+  , FormQuery
+  , FormlessAction
+  )
 import Formless as Formless
 import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
@@ -36,13 +47,13 @@ type ComponentMonad m a = HalogenM
 
 type ComponentView m = ComponentHTML Action ChildSlots m
 
-type ChildSlots :: forall slots. Row slots
+type ChildSlots ∷ ∀ slots. Row slots
 type ChildSlots = ()
 
-type FormFields :: (Type -> Type -> Type -> Type) -> Row Type
+type FormFields ∷ (Type → Type → Type → Type) → Row Type
 type FormFields f =
-  ( message :: f String String Message
-  , key :: f String String Key
+  ( message ∷ f String String Message
+  , key ∷ f String String Key
   )
 
 type FormInputs = FormFields FieldInput
@@ -59,7 +70,7 @@ type Input = Unit
 
 type Output = Config
 
-type Query :: forall a. a -> Type
+type Query ∷ ∀ a. a → Type
 type Query = Const Void
 
 type State = Form
@@ -69,10 +80,10 @@ data Action
   | Receive Form
 
 component
-  :: forall m
-   . MonadAff m
-  => MonadThrow Error m
-  => MakeFormComponent Config m
+  ∷ ∀ m
+  . MonadAff m
+  ⇒ MonadThrow Error m
+  ⇒ MakeFormComponent Config m
 component presets =
   Formless.formless
     { liftAction: Eval }
@@ -87,7 +98,7 @@ component presets =
             }
         }
 
-render :: forall m. Form -> ComponentView m
+render ∷ ∀ m. Form → ComponentView m
 render { actions, fields, formActions, formState } =
   HH.form
     [ HE.onSubmit formActions.handleSubmit ]
@@ -106,10 +117,10 @@ render { actions, fields, formActions, formState } =
             , minLength CesarCypher.minMessageLength
             ]
         , HH.text case fields.message.result of
-            Just (Left errorMsg) ->
+            Just (Left errorMsg) →
               errorMsg
 
-            _ ->
+            _ →
               ""
         ]
     , HH.div
@@ -127,31 +138,27 @@ render { actions, fields, formActions, formState } =
             ]
         , HH.text fields.key.value
         , HH.text case fields.key.result of
-            Just (Left errorMsg) ->
+            Just (Left errorMsg) →
               errorMsg
 
-            _ ->
+            _ →
               ""
         ]
-    , HH.input
-        [ HP.type_ InputSubmit
-        , HP.disabled $ formState.errorCount > 0
-        , HP.value "Start"
-        ]
+    , Sandbox.submitPanel formState
     ]
 
-handleAction :: forall m. MonadEffect m => Action -> ComponentMonad m Unit
+handleAction ∷ ∀ m. MonadEffect m ⇒ Action → ComponentMonad m Unit
 handleAction = case _ of
-  Eval formAction ->
+  Eval formAction →
     Formless.eval formAction
 
-  Receive form ->
+  Receive form →
     put form
 
 handleQuery
-  :: forall a m
-   . FormQuery Query FormInputs FormResults FormOutputs a
-  -> ComponentMonad m (Maybe a)
+  ∷ ∀ a m
+  . FormQuery Query FormInputs FormResults FormOutputs a
+  → ComponentMonad m (Maybe a)
 handleQuery = do
   Formless.handleSubmitValidate
     Formless.raise
@@ -159,15 +166,15 @@ handleQuery = do
     { key: validateKey, message: validateMessage }
   where
   validateKey = Int.fromString >>> case _ of
-    Nothing ->
+    Nothing →
       Left "key is not an integer"
 
-    Just i ->
+    Just i →
       CesarCypher.key i
 
   validateMessage = CesarCypher.message
 
-toInputs :: Config -> Record FormInputs
+toInputs ∷ Config → Record FormInputs
 toInputs { key, message } =
   { key: show $ CesarCypher.toInt key
   , message: CesarCypher.toString message

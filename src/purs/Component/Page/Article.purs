@@ -11,7 +11,7 @@ import Data.Article (Article, Overview, Section)
 import Data.ArticleId (ArticleId, Title)
 import Data.ArticleId as ArticleId
 import Data.ArticleIndex as ArticleIndex
-import Data.Foldable (class Foldable)
+import Data.Foldable (class Foldable, null)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
 import Data.Maybe (Maybe(..))
 import Data.Paragraph (Paragraph, Segment(..))
@@ -28,10 +28,10 @@ import Halogen.HTML.Properties as HP
 import Routing.Duplex as RD
 import Type.Proxy (Proxy(..))
 
-type ComponentMonad m a = forall o. HalogenM State Action ChildSlots o m a
+type ComponentMonad m a = ∀ o. HalogenM State Action ChildSlots o m a
 type ComponentView m = ComponentHTML Action ChildSlots m
 
-type ChildSlots = (sandbox :: OpaqueSlot Int)
+type ChildSlots = (sandbox ∷ OpaqueSlot Int)
 
 type State = Input
 
@@ -41,7 +41,7 @@ data Action
   = Initialize
   | Receive Input
 
-component ∷ ∀ m o q. MonadAff m => Component q Input o m
+component ∷ ∀ m o q. MonadAff m ⇒ Component q Input o m
 component =
   H.mkComponent
     { initialState
@@ -56,7 +56,7 @@ component =
 initialState ∷ Input → State
 initialState = identity
 
-render ∷ forall m. MonadAff m => State → ComponentView m
+render ∷ ∀ m. MonadAff m ⇒ State → ComponentView m
 render articleId =
   let
     article = ArticleIndex.articleById articleId
@@ -71,11 +71,11 @@ render articleId =
       ]
 
 renderRelatedArticles
-  :: forall f
-   . Foldable f
-  => Functor f
-  => f ArticleId
-  -> PlainHTML
+  ∷ ∀ f
+  . Foldable f
+  ⇒ Functor f
+  ⇒ f ArticleId
+  → PlainHTML
 renderRelatedArticles articleIds =
   HH.section
     [ classes [ "flex", "flex-col" ] ]
@@ -86,13 +86,13 @@ renderRelatedArticles articleIds =
         <> (Array.fromFoldable $ renderRelatedArticle <$> articleIds)
     )
 
-renderRelatedArticle :: ArticleId -> PlainHTML
+renderRelatedArticle ∷ ArticleId → PlainHTML
 renderRelatedArticle articleId = renderSegment
   $ InternalReference
       (ArticleId.toNonEmptyString $ ArticleId.toTitle articleId)
       articleId
 
-renderArticle :: Title -> Article -> PlainHTML
+renderArticle ∷ Title → Article → PlainHTML
 renderArticle title { overview, sections } =
   HH.article
     [ classes [ "flex", "flex-col" ] ]
@@ -105,9 +105,16 @@ renderArticle title { overview, sections } =
         <> (HH.fromPlainHTML <<< renderSection <$> sections)
     )
 
-renderSandboxes :: forall f m. FunctorWithIndex Int f => Foldable f => MonadAff m => f (SandboxComponent Aff) -> ComponentView m
+renderSandboxes
+  ∷ ∀ f m
+  . FunctorWithIndex Int f
+  ⇒ Foldable f
+  ⇒ MonadAff m
+  ⇒ f (SandboxComponent Aff)
+  → ComponentView m
 renderSandboxes sandboxes =
-  HH.section
+  if null sandboxes then HH.text ""
+  else HH.section
     [ classes [ "flex", "flex-col", "mb-16" ] ]
     ( [ HH.h2
           [ classes [ "text-2xl" ] ]
@@ -116,12 +123,12 @@ renderSandboxes sandboxes =
         (Array.fromFoldable $ renderSandbox `mapWithIndex` sandboxes)
     )
 
-renderArticleTitle :: Title -> PlainHTML
+renderArticleTitle ∷ Title → PlainHTML
 renderArticleTitle title = HH.h1
   [ classes [ "text-3xl" ] ]
   [ HH.text $ ArticleId.toString title ]
 
-renderSection :: Section -> PlainHTML
+renderSection ∷ Section → PlainHTML
 renderSection { paragraphs, title } =
   HH.section
     [ classes [ "flex", "flex-col", "mb-16" ] ]
@@ -131,54 +138,55 @@ renderSection { paragraphs, title } =
       ] <> ((map renderParagraph <<< NEArray.toArray) paragraphs)
     )
 
-renderSandbox :: forall m. MonadAff m => Int -> (SandboxComponent Aff) -> ComponentView m
+renderSandbox
+  ∷ ∀ m. MonadAff m ⇒ Int → (SandboxComponent Aff) → ComponentView m
 renderSandbox idx sandbox =
   HH.div
     [ classes [ "mt-4" ] ]
     [ HH.slot_
-        (Proxy :: _ "sandbox")
+        (Proxy ∷ _ "sandbox")
         idx
         (H.hoist liftAff sandbox)
         unit
     ]
 
-renderOverview :: Overview -> PlainHTML
+renderOverview ∷ Overview → PlainHTML
 renderOverview overview =
   HH.div
     [ classes [ "flex", "flex-col" ]
     ]
     (Array.fromFoldable $ renderParagraph <$> overview)
 
-renderParagraph :: Paragraph -> PlainHTML
+renderParagraph ∷ Paragraph → PlainHTML
 renderParagraph paragraph =
   HH.div
     [ classes [ "flex", "flex-col", "mt-4" ]
     ]
     (Array.fromFoldable $ renderSegment <$> paragraph)
 
-renderSegment :: Segment -> PlainHTML
+renderSegment ∷ Segment → PlainHTML
 renderSegment = case _ of
-  ExternalReference rep href ->
+  ExternalReference rep href →
     HH.a
       [ HP.href href, classes linkClassNames ]
       [ HH.text $ NEString.toString rep ]
 
-  InternalReference rep articleId ->
+  InternalReference rep articleId →
     HH.a
       [ articleHref articleId, classes linkClassNames ]
       [ HH.text $ NEString.toString rep ]
 
-  Text s ->
+  Text s →
     HH.text s
 
-linkClassNames :: Array String
+linkClassNames ∷ Array String
 linkClassNames =
   [ "hover:underline"
   , "no-underline"
   , "text-sky-500"
   ]
 
-handleAction ∷ forall m. MonadAff m => Action → ComponentMonad m Unit
+handleAction ∷ ∀ m. MonadAff m ⇒ Action → ComponentMonad m Unit
 handleAction = case _ of
   Initialize →
     pure unit
@@ -186,9 +194,9 @@ handleAction = case _ of
   Receive input →
     put input
 
-articleHref :: forall i r. ArticleId -> IProp (href :: String | r) i
+articleHref ∷ ∀ i r. ArticleId → IProp (href ∷ String | r) i
 articleHref = safeHref <<< Article
 
-safeHref :: forall i r. Route -> IProp (href :: String | r) i
+safeHref ∷ ∀ i r. Route → IProp (href ∷ String | r) i
 safeHref = HP.href <<< append "#" <<< RD.print Route.codec
 

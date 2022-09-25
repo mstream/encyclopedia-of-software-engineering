@@ -1,9 +1,14 @@
-module Component.Sandbox.HashCollision.Form (Output(..), Query, component) where
+module Component.Sandbox.HashCollision.Form
+  ( Output(..)
+  , Query
+  , component
+  ) where
 
 import Prelude
 
 import Component.Sandbox (MakeFormComponent, Preset, Presets)
-import Component.Utils (button, classes, maxLength, radioGroup, size, submit)
+import Component.Sandbox as SandboxComponent
+import Component.Utils (button, classes, maxLength, radioGroup, size)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, put)
 import Data.Array as Array
@@ -13,13 +18,22 @@ import Data.HashCollision (Algorithm(..), Config)
 import Data.HashCollision as HashCollision
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty (fromNonEmpty, head)
-import Data.String.NonEmpty as NEString
 import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Exception (Error)
-import Formless (FieldAction, FieldInput, FieldOutput, FieldState, FormContext, FormOutput, FormQuery, FormlessAction, FieldResult)
+import Formless
+  ( FieldAction
+  , FieldInput
+  , FieldOutput
+  , FieldResult
+  , FieldState
+  , FormContext
+  , FormOutput
+  , FormQuery
+  , FormlessAction
+  )
 import Formless as Formless
 import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
@@ -27,7 +41,6 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (InputType(..))
 import Halogen.HTML.Properties as HP
-import Type.Proxy (Proxy(..))
 
 type ComponentMonad m a = HalogenM
   State
@@ -39,14 +52,14 @@ type ComponentMonad m a = HalogenM
 
 type ComponentView m = ComponentHTML Action ChildSlots m
 
-type ChildSlots :: forall slots. Row slots
+type ChildSlots ∷ ∀ slots. Row slots
 type ChildSlots = ()
 
-type FormFields :: (Type -> Type -> Type -> Type) -> Row Type
+type FormFields ∷ (Type → Type → Type → Type) → Row Type
 type FormFields f =
-  ( algorithm :: f Algorithm Void Algorithm
-  , input1 :: f String String String
-  , input2 :: f String String String
+  ( algorithm ∷ f Algorithm Void Algorithm
+  , input1 ∷ f String String String
+  , input2 ∷ f String String String
   )
 
 type FormInputs = FormFields FieldInput
@@ -62,7 +75,7 @@ type Form = FormContext
 type Input = Unit
 type Output = Config
 
-type Query :: forall a. a -> Type
+type Query ∷ ∀ a. a → Type
 type Query = Const Void
 
 type State = Form
@@ -73,10 +86,10 @@ data Action
   | Receive Form
 
 component
-  :: forall m
-   . MonadAff m
-  => MonadThrow Error m
-  => MakeFormComponent Config m
+  ∷ ∀ m
+  . MonadAff m
+  ⇒ MonadThrow Error m
+  ⇒ MakeFormComponent Config m
 component presets =
   Formless.formless
     { liftAction: Eval }
@@ -91,7 +104,7 @@ component presets =
             }
         }
 
-render :: forall m. Presets Config -> Form -> ComponentView m
+render ∷ ∀ m. Presets Config → Form → ComponentView m
 render presets { actions, fields, formActions, formState } =
   HH.form
     [ HE.onSubmit formActions.handleSubmit ]
@@ -100,10 +113,22 @@ render presets { actions, fields, formActions, formState } =
         { action: actions.algorithm
         , label: "algorithm"
         , options:
-            [ { option: Md5, render: HashCollision.toString Md5, props: [] }
-            , { option: Sha1, render: HashCollision.toString Sha1, props: [] }
-            , { option: Sha256, render: HashCollision.toString Sha256, props: [] }
-            , { option: Sha512, render: HashCollision.toString Sha512, props: [] }
+            [ { option: Md5
+              , render: HashCollision.toString Md5
+              , props: []
+              }
+            , { option: Sha1
+              , render: HashCollision.toString Sha1
+              , props: []
+              }
+            , { option: Sha256
+              , render: HashCollision.toString Sha256
+              , props: []
+              }
+            , { option: Sha512
+              , render: HashCollision.toString Sha512
+              , props: []
+              }
             ]
         , state: fields.algorithm
         }
@@ -121,10 +146,10 @@ render presets { actions, fields, formActions, formState } =
             , maxLength HashCollision.maxInputLength
             ]
         , HH.text case fields.input1.result of
-            Just (Left errorMsg) ->
+            Just (Left errorMsg) →
               errorMsg
 
-            _ ->
+            _ →
               ""
         ]
     , HH.div
@@ -141,23 +166,21 @@ render presets { actions, fields, formActions, formState } =
             , maxLength HashCollision.maxInputLength
             ]
         , HH.text case fields.input2.result of
-            Just (Left errorMsg) ->
+            Just (Left errorMsg) →
               errorMsg
 
-            _ ->
+            _ →
               ""
         ]
-    , HH.div
-        [ classes [ "flex", "flex-row", "justify-center", "mt-4" ] ]
-        [ submit { formState, label: NEString.nes (Proxy :: _ "Start") } ]
+    , SandboxComponent.submitPanel formState
     ]
 
 renderPresets
-  :: forall m
-   . Presets Config
-  -> ComponentView m
+  ∷ ∀ m
+  . Presets Config
+  → ComponentView m
 renderPresets = HH.div [ classes [ "flex", "flex-col", "mb-4" ] ]
-  <<< fromNonEmpty \preset presets ->
+  <<< fromNonEmpty \preset presets →
     if Array.null presets then [ HH.text "" ]
     else
       [ HH.label_ [ HH.text "Configuration Presets" ]
@@ -167,31 +190,34 @@ renderPresets = HH.div [ classes [ "flex", "flex-col", "mb-4" ] ]
               <> [ HH.hr_ ]
       ]
 
-renderPreset :: forall m. Preset Config -> ComponentView m
+renderPreset ∷ ∀ m. Preset Config → ComponentView m
 renderPreset (presetName /\ config) =
   button { action: ApplyPreset config, label: presetName }
 
-handleAction :: forall m. MonadEffect m => Action -> ComponentMonad m Unit
+handleAction ∷ ∀ m. MonadEffect m ⇒ Action → ComponentMonad m Unit
 handleAction = case _ of
-  ApplyPreset config -> do
-    { formActions } <- get
+  ApplyPreset config → do
+    { formActions } ← get
     handleAction $ formActions.setFields $ Formless.mkFieldStates config
 
-  Eval formAction ->
+  Eval formAction →
     Formless.eval formAction
 
-  Receive form ->
+  Receive form →
     put form
 
 handleQuery
-  :: forall a m
-   . FormQuery Query FormInputs FormResults FormOutputs a
-  -> ComponentMonad m (Maybe a)
+  ∷ ∀ a m
+  . FormQuery Query FormInputs FormResults FormOutputs a
+  → ComponentMonad m (Maybe a)
 handleQuery = do
   Formless.handleSubmitValidate
     Formless.raise
     Formless.validate
-    { algorithm: validateAlgorithm, input1: validateInput, input2: validateInput }
+    { algorithm: validateAlgorithm
+    , input1: validateInput
+    , input2: validateInput
+    }
   where
   validateAlgorithm = Right
 
