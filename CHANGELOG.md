@@ -1,5 +1,12 @@
 
 
+## [1.2.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.1.7...1.2.0) (2022-10-03)
+
+
+### Features
+
+* add a bubble sort sandbox ([074f1c5](https://github.com/mstream/encyclopedia-of-software-engineering/commit/074f1c57cc5dad584649cdc2ef977b8798e26f07))
+
 ### [1.1.7](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.1.6...1.1.7) (2022-09-25)
 
 ### [1.1.6](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.1.5...1.1.6) (2022-09-25)
