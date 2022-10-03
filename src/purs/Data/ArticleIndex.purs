@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Article (Article, Tags)
 import Data.Article.AsymmetricEncryption as AsymmetricEncryption
+import Data.Article.BubbleSort as BubbleSort
 import Data.Article.CryptographicHashing as CryptographicHashing
 import Data.Article.Encryption as Encryption
 import Data.Article.SymmetricEncryption as SymmetricEncryption
@@ -16,19 +17,21 @@ import Data.Set as Set
 import Data.Tuple (fst, snd)
 import Utils (allValues)
 
-tagsById :: ArticleId -> Tags
+tagsById ∷ ArticleId → Tags
 tagsById = _.tags <<< articleById
 
-relatedArticlesById :: ArticleId -> List ArticleId
+relatedArticlesById ∷ ArticleId → List ArticleId
 relatedArticlesById articleId =
   let
     matchesById = foldl
       f
       Map.empty
-      (Set.delete articleId (Set.fromFoldable (allValues :: Array ArticleId)))
+      ( Set.delete articleId
+          (Set.fromFoldable (allValues ∷ Array ArticleId))
+      )
 
     idAndMatchesPairs = List.sortBy
-      (\e1 e2 -> (snd e1) `compare` (snd e2))
+      (\e1 e2 → (snd e1) `compare` (snd e2))
       (Map.toUnfoldable matchesById)
   in
     fst <$> idAndMatchesPairs
@@ -41,10 +44,11 @@ relatedArticlesById articleId =
       if matchingTags == 0 then acc
       else Map.insert otherId matchingTags acc
 
-articleById :: ArticleId -> Article
+articleById ∷ ArticleId → Article
 articleById = case _ of
-  AsymmetricEncryption -> AsymmetricEncryption.article
-  CryptographicHashing -> CryptographicHashing.article
-  Encryption -> Encryption.article
-  SymmetricEncryption -> SymmetricEncryption.article
+  AsymmetricEncryption → AsymmetricEncryption.article
+  BubbleSort → BubbleSort.article
+  CryptographicHashing → CryptographicHashing.article
+  Encryption → Encryption.article
+  SymmetricEncryption → SymmetricEncryption.article
 

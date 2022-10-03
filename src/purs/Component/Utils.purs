@@ -1,12 +1,15 @@
 module Component.Utils
   ( OpaqueSlot
   , RawHTML(..)
+  , RequestAnimationFrameId
+  , animationFrameUpdateEmitter
   , button
   , classes
   , maxLength
   , minLength
   , radioGroup
   , rangeInput
+  , requestAnimationFrame
   , size
   , submit
   , textInput
@@ -34,7 +37,9 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (ButtonType(..), InputType(..))
 import Halogen.HTML.Properties as HP
-import Web.HTML (HTMLElement)
+import Halogen.Subscription (Emitter)
+import Halogen.Subscription as HS
+import Web.HTML (HTMLElement, Window, window)
 
 newtype RawHTML = RawHTML String
 
@@ -188,3 +193,31 @@ textInput { action, label, lengthRange, placeholder, state } =
         _ →
           ""
     ]
+
+animationFrameUpdateEmitter
+  ∷ ∀ action m
+  . MonadEffect m
+  ⇒ (Number → action)
+  → m (Emitter action)
+animationFrameUpdateEmitter makeAction = liftEffect do
+  { emitter, listener } ← HS.create
+  win ← window
+
+  let
+    loop timestamp = do
+      HS.notify listener $ makeAction timestamp
+      void $ requestAnimationFrame win loop
+
+  void $ requestAnimationFrame win loop
+
+  pure emitter
+
+newtype RequestAnimationFrameId = RequestAnimationFrameId Int
+
+requestAnimationFrame
+  ∷ Window → (Number → Effect Unit) → Effect RequestAnimationFrameId
+requestAnimationFrame window cb = RequestAnimationFrameId
+  <$> runFn2 requestAnimationFrameImpl window cb
+
+foreign import requestAnimationFrameImpl
+  ∷ Fn2 Window (Number → Effect Unit) (Effect Int)

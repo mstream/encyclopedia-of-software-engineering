@@ -14,7 +14,13 @@ import Data.Codec (BasicCodec, basicCodec)
 import Data.Either (Either(..), note)
 import Data.Either.Nested (type (\/))
 import Data.Enum (class BoundedEnum, class Enum)
-import Data.Enum.Generic (genericCardinality, genericFromEnum, genericPred, genericSucc, genericToEnum)
+import Data.Enum.Generic
+  ( genericCardinality
+  , genericFromEnum
+  , genericPred
+  , genericSucc
+  , genericToEnum
+  )
 import Data.Generic.Rep (class Generic)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromJust)
@@ -29,6 +35,7 @@ import Utils (allValues)
 
 data ArticleId
   = AsymmetricEncryption
+  | BubbleSort
   | CryptographicHashing
   | Encryption
   | SymmetricEncryption
@@ -57,46 +64,49 @@ newtype Title = Title NonEmptyString
 derive newtype instance Eq Title
 derive newtype instance Ord Title
 
-toString :: Title -> String
+toString ∷ Title → String
 toString = NEString.toString <<< toNonEmptyString
 
-toNonEmptyString :: Title -> NonEmptyString
+toNonEmptyString ∷ Title → NonEmptyString
 toNonEmptyString (Title nes) = nes
 
-toTitle :: ArticleId -> Title
+toTitle ∷ ArticleId → Title
 toTitle = Title <<< case _ of
-  AsymmetricEncryption ->
-    NEString.nes (Proxy :: _ "Asymmetric Encryption")
+  AsymmetricEncryption →
+    NEString.nes (Proxy ∷ _ "Asymmetric Encryption")
 
-  CryptographicHashing ->
-    NEString.nes (Proxy :: _ "Cryptographic Hashing")
+  BubbleSort →
+    NEString.nes (Proxy ∷ _ "Bubble Sort")
 
-  Encryption ->
-    NEString.nes (Proxy :: _ "Encryption")
+  CryptographicHashing →
+    NEString.nes (Proxy ∷ _ "Cryptographic Hashing")
 
-  SymmetricEncryption ->
-    NEString.nes (Proxy :: _ "Symmetric Encryption")
+  Encryption →
+    NEString.nes (Proxy ∷ _ "Encryption")
 
-toSlug :: ArticleId -> Slug
+  SymmetricEncryption →
+    NEString.nes (Proxy ∷ _ "Symmetric Encryption")
+
+toSlug ∷ ArticleId → Slug
 toSlug = unsafePartial $ fromJust
   <<< Slug.generate
   <<< toString
   <<< toTitle
 
-encode :: ArticleId -> String
+encode ∷ ArticleId → String
 encode = Slug.toString <<< toSlug
 
-decode :: String -> String \/ ArticleId
+decode ∷ String → String \/ ArticleId
 decode = Slug.parse >>> case _ of
-  Nothing ->
+  Nothing →
     Left "invalid slug"
 
-  Just slug ->
+  Just slug →
     note "article not found" $ Map.lookup slug idsBySlug
 
   where
   idsBySlug = Map.fromFoldable
-    $ (\id -> toSlug id /\ id) <$> (allValues :: Array ArticleId)
+    $ (\id → toSlug id /\ id) <$> (allValues ∷ Array ArticleId)
 
-codec :: BasicCodec (Either String) String ArticleId
+codec ∷ BasicCodec (Either String) String ArticleId
 codec = basicCodec decode encode

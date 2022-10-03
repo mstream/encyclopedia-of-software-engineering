@@ -4,3 +4,10 @@ export function unsafeSetInnerHtmlImpl(element, html) {
   }
 }
 
+export function requestAnimationFrameImpl(window, cb) {
+  return function() {
+    const onUpdate = timestamp => cb(timestamp)()
+    return window.requestAnimationFrame(onUpdate)
+  }
+}
+

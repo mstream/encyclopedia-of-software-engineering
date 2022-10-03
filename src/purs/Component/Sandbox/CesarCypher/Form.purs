@@ -98,7 +98,7 @@ component presets =
             }
         }
 
-render ∷ ∀ m. Presets Config → Form → ComponentView m
+render ∷ ∀ m. Presets Config → State → ComponentView m
 render presets { actions, fields, formActions, formState } =
   Sandbox.renderForm
     formActions.handleSubmit
