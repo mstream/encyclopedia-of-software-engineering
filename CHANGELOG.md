@@ -1,5 +1,12 @@
 
 
+### [1.2.1](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.2.0...1.2.1) (2022-10-05)
+
+
+### Bug Fixes
+
+* make sandboxes refresh properly after navigation ([08db524](https://github.com/mstream/encyclopedia-of-software-engineering/commit/08db524c84d376070e9175d55e13b344477159f8))
+
 ## [1.2.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.1.7...1.2.0) (2022-10-03)
 
 
