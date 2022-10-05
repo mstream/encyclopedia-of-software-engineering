@@ -2,32 +2,34 @@ module Data.Article.AsymmetricEncryption (article) where
 
 import Prelude
 
-import Data.Paragraph as Paragraph
-import Data.Article as Article
 import Data.Array.NonEmpty as NEArray
-import Data.Article (Article, Section, Overview)
+import Data.Article (Article, Overview, Section)
+import Data.Article as Article
 import Data.Paragraph (Segment(..))
+import Data.Paragraph as Paragraph
 import Data.Set as Set
 import Data.String.NonEmpty as NEString
 import Data.Tag (Tag(..))
 import Type.Proxy (Proxy(..))
 
-article :: Article
+article ∷ Article
 article =
   { overview
-  , sandboxes: []
+  , sandboxes: Set.fromFoldable []
   , sections
   , tags: Set.fromFoldable [ Cryptography ]
   }
 
-overview :: Overview
-overview = Article.unsafeOverview [ Paragraph.unsafeParagraph [ Text "TODO(Overview)" ] ]
+overview ∷ Overview
+overview = Article.unsafeOverview
+  [ Paragraph.unsafeParagraph [ Text "TODO(Overview)" ] ]
 
-sections :: Array Section
+sections ∷ Array Section
 sections = [ typesSection ]
 
-typesSection :: Section
+typesSection ∷ Section
 typesSection =
-  { paragraphs: NEArray.singleton $ Paragraph.unsafeParagraph [ Text "TODO(Types)" ]
-  , title: NEString.nes (Proxy :: _ "Types")
+  { paragraphs: NEArray.singleton $ Paragraph.unsafeParagraph
+      [ Text "TODO(Types)" ]
+  , title: NEString.nes (Proxy ∷ _ "Types")
   }

@@ -2,8 +2,8 @@ module Component.Page.Article (articleHref, component, renderSegment) where
 
 import Prelude
 
-import Component.Sandbox (SandboxComponent)
-import Component.Utils (OpaqueSlot, classes)
+import Component.Utils (classes)
+import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
 import Data.Array as Array
 import Data.Array.NonEmpty as NEArray
@@ -12,26 +12,27 @@ import Data.ArticleId (ArticleId, Title)
 import Data.ArticleId as ArticleId
 import Data.ArticleIndex as ArticleIndex
 import Data.Foldable (class Foldable, null)
-import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
+import Data.FunctorWithIndex (class FunctorWithIndex)
+import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Paragraph (Paragraph, Segment(..))
 import Data.Route (Route(..))
 import Data.Route as Route
+import Data.SandboxId (SandboxId)
+import Data.SandboxIndex (ChildSlots)
+import Data.SandboxIndex as SandboxIndex
 import Data.String.NonEmpty as NEString
-import Effect.Aff (Aff)
-import Effect.Aff.Class (class MonadAff, liftAff)
+import Effect.Aff.Class (class MonadAff)
+import Effect.Exception (Error)
 import Halogen (Component, ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML (IProp, PlainHTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Routing.Duplex as RD
-import Type.Proxy (Proxy(..))
 
 type ComponentMonad m a = ∀ o. HalogenM State Action ChildSlots o m a
 type ComponentView m = ComponentHTML Action ChildSlots m
-
-type ChildSlots = (sandbox ∷ OpaqueSlot Int)
 
 type State = Input
 
@@ -41,7 +42,8 @@ data Action
   = Initialize
   | Receive Input
 
-component ∷ ∀ m o q. MonadAff m ⇒ Component q Input o m
+component
+  ∷ ∀ m o q. MonadAff m ⇒ MonadThrow Error m ⇒ Component q Input o m
 component =
   H.mkComponent
     { initialState
@@ -56,7 +58,7 @@ component =
 initialState ∷ Input → State
 initialState = identity
 
-render ∷ ∀ m. MonadAff m ⇒ State → ComponentView m
+render ∷ ∀ m. MonadAff m ⇒ MonadThrow Error m ⇒ State → ComponentView m
 render articleId =
   let
     article = ArticleIndex.articleById articleId
@@ -66,7 +68,7 @@ render articleId =
     HH.div
       [ classes [ "flex", "flex-col", "mx-auto", "overflow-scroll" ] ]
       [ HH.fromPlainHTML $ renderArticle title article
-      , renderSandboxes article.sandboxes
+      , renderSandboxes $ List.fromFoldable article.sandboxes
       , HH.fromPlainHTML $ renderRelatedArticles relatedArticleIds
       ]
 
@@ -110,17 +112,18 @@ renderSandboxes
   . FunctorWithIndex Int f
   ⇒ Foldable f
   ⇒ MonadAff m
-  ⇒ f (SandboxComponent Aff)
+  ⇒ MonadThrow Error m
+  ⇒ f SandboxId
   → ComponentView m
-renderSandboxes sandboxes =
-  if null sandboxes then HH.text ""
+renderSandboxes sandboxIds =
+  if null sandboxIds then HH.text ""
   else HH.section
     [ classes [ "flex", "flex-col", "mb-16" ] ]
     ( [ HH.h2
           [ classes [ "text-2xl" ] ]
           [ HH.text "Sandboxes" ]
       ] <>
-        (Array.fromFoldable $ renderSandbox `mapWithIndex` sandboxes)
+        (Array.fromFoldable $ renderSandbox <$> sandboxIds)
     )
 
 renderArticleTitle ∷ Title → PlainHTML
@@ -139,16 +142,11 @@ renderSection { paragraphs, title } =
     )
 
 renderSandbox
-  ∷ ∀ m. MonadAff m ⇒ Int → (SandboxComponent Aff) → ComponentView m
-renderSandbox idx sandbox =
+  ∷ ∀ m. MonadAff m ⇒ MonadThrow Error m ⇒ SandboxId → ComponentView m
+renderSandbox sandboxId =
   HH.div
     [ classes [ "mt-4" ] ]
-    [ HH.slot_
-        (Proxy ∷ _ "sandbox")
-        idx
-        (H.hoist liftAff sandbox)
-        unit
-    ]
+    [ SandboxIndex.sandboxComponentById sandboxId ]
 
 renderOverview ∷ Overview → PlainHTML
 renderOverview overview =

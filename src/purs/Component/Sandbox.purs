@@ -14,7 +14,6 @@ module Component.Sandbox
 import Prelude
 
 import Component.Utils (OpaqueSlot, button, classes, submit)
-import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
 import Data.Array as Array
 import Data.Const (Const)
@@ -25,7 +24,6 @@ import Data.String.NonEmpty as NEString
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Exception (Error)
 import Formless (FormState)
 import Halogen (Component, ComponentHTML, HalogenM, Slot)
 import Halogen as H
@@ -123,13 +121,13 @@ renderPreset handleApplyPreset (presetName /\ config) =
 component
   ∷ ∀ config m
   . MonadAff m
-  ⇒ MonadThrow Error m
-  ⇒ FormComponent config m
+  ⇒ NonEmptyString
+  → FormComponent config m
   → SimulationComponent config m
   → SandboxComponent m
-component formComponent simulationComponent = H.mkComponent
+component title formComponent simulationComponent = H.mkComponent
   { initialState: const Nothing
-  , render: render formComponent simulationComponent
+  , render: render title formComponent simulationComponent
   , eval: H.mkEval $ H.defaultEval
       { handleAction = handleAction
       }
@@ -138,17 +136,21 @@ component formComponent simulationComponent = H.mkComponent
 render
   ∷ ∀ config m
   . MonadAff m
-  ⇒ MonadThrow Error m
-  ⇒ FormComponent config m
+  ⇒ NonEmptyString
+  → FormComponent config m
   → SimulationComponent config m
   → State config
   → ComponentView config m
-render formComponent simulationComponent state =
+render title formComponent simulationComponent state =
   HH.div
-    [ classes [ "border", "flex", "flex-col" ] ]
-    [ formPanel formComponent $ isNothing state
-    , resetPanel $ isJust state
-    , maybe (HH.text "") (simulationPanel simulationComponent) state
+    [ classes [ "border" ] ]
+    [ HH.text $ NEString.toString title
+    , HH.div
+        [ classes [ "border", "flex", "flex-col" ] ]
+        [ formPanel formComponent $ isNothing state
+        , resetPanel $ isJust state
+        , maybe (HH.text "") (simulationPanel simulationComponent) state
+        ]
     ]
 
 handleAction

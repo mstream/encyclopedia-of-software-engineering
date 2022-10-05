@@ -2,16 +2,16 @@ module Component.Mermaid (component) where
 
 import Prelude
 
-import Data.Mermaid (DiagramDef)
-import Data.Mermaid as Mermaid
 import Component.RawHTML as RawHTML
-import Component.Utils (RawHTML(..), OpaqueSlot)
+import Component.Utils (OpaqueSlot, RawHTML(..))
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, modify_)
 import Control.Promise (Promise, toAffE)
 import Data.Const (Const)
 import Data.Function.Uncurried (Fn2, runFn2)
 import Data.Maybe (Maybe(..))
+import Data.Mermaid (DiagramDef)
+import Data.Mermaid as Mermaid
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Exception (Error)
@@ -27,19 +27,20 @@ type Input = DiagramDef
 
 type SvgCode = RawHTML
 
-type State = { diagramDef :: DiagramDef, svgCode :: Maybe SvgCode }
+type State = { diagramDef ∷ DiagramDef, svgCode ∷ Maybe SvgCode }
 
 data Action = Initialize | Receive Input
 
-type ChildSlots = (svg :: OpaqueSlot Unit)
+type ChildSlots = (svg ∷ OpaqueSlot Unit)
 
-type Query :: forall k. k -> Type
+type Query ∷ ∀ k. k → Type
 type Query = Const Void
 
-component :: forall m. MonadAff m => MonadThrow Error m => Component Query Input Void m
+component
+  ∷ ∀ m. MonadAff m ⇒ MonadThrow Error m ⇒ Component Query Input Void m
 component =
   H.mkComponent
-    { initialState: \diagramDef -> { diagramDef, svgCode: Nothing }
+    { initialState: \diagramDef → { diagramDef, svgCode: Nothing }
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
@@ -48,34 +49,35 @@ component =
         }
     }
 
-handleAction :: forall m. MonadAff m => Action -> ComponentMonad m Unit
+handleAction ∷ ∀ m. MonadAff m ⇒ Action → ComponentMonad m Unit
 handleAction = case _ of
-  Initialize -> do
-    { diagramDef } <- get
-    svgCode <- generateDiagram diagramDef
+  Initialize → do
+    { diagramDef } ← get
+    svgCode ← generateDiagram diagramDef
     modify_ _ { svgCode = Just svgCode }
 
-  Receive diagramDef -> do
+  Receive diagramDef → do
     modify_ _ { diagramDef = diagramDef }
     handleAction Initialize
 
-render :: forall m. MonadAff m => MonadThrow Error m => State -> ComponentView m
+render ∷ ∀ m. MonadAff m ⇒ MonadThrow Error m ⇒ State → ComponentView m
 render state = case state.svgCode of
-  Nothing ->
+  Nothing →
     HH.text ""
 
-  Just svgCode ->
-    HH.slot_ (Proxy :: _ "svg") unit RawHTML.component svgCode
+  Just svgCode →
+    HH.slot_ (Proxy ∷ _ "svg") unit RawHTML.component svgCode
 
-generateDiagram :: forall m. MonadAff m => DiagramDef -> m SvgCode
+generateDiagram ∷ ∀ m. MonadAff m ⇒ DiagramDef → m SvgCode
 generateDiagram = map RawHTML
   <<< renderDiagramSvgCode "svgId"
   <<< Mermaid.toString
 
-renderDiagramSvgCode :: forall m. MonadAff m => String -> String -> m String
+renderDiagramSvgCode ∷ ∀ m. MonadAff m ⇒ String → String → m String
 renderDiagramSvgCode elementId diagramDef = liftAff
   $ toAffE
   $ runFn2 renderDiagramSvgCodeImpl elementId diagramDef
 
-foreign import renderDiagramSvgCodeImpl :: Fn2 String String (Effect (Promise String))
+foreign import renderDiagramSvgCodeImpl
+  ∷ Fn2 String String (Effect (Promise String))
 

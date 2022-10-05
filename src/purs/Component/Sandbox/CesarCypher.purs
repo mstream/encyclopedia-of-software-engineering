@@ -19,17 +19,19 @@ import Effect.Exception (Error)
 import Partial.Unsafe (unsafePartial)
 import Type.Proxy (Proxy(..))
 
-component :: forall m. MonadAff m => MonadThrow Error m => SandboxComponent m
+component
+  ∷ ∀ m. MonadAff m ⇒ MonadThrow Error m ⇒ SandboxComponent m
 component = Sandbox.component
+  (NEString.nes (Proxy ∷ _ "Cesar Cypher"))
   (Form.component presets)
   Simulation.component
   where
   presets = defaultPreset :| []
-  defaultPreset = NEString.nes (Proxy :: _ "default") /\
+  defaultPreset = NEString.nes (Proxy ∷ _ "default") /\
     unsafePreset 3 "Hello World"
 
-unsafePreset :: Int -> String -> Config
+unsafePreset ∷ Int → String → Config
 unsafePreset i s = unsafePartial $ fromJust $ hush $ ado
-  key <- CesarCypher.key i
-  message <- CesarCypher.message s
+  key ← CesarCypher.key i
+  message ← CesarCypher.message s
   in { key, message }

@@ -19,12 +19,11 @@ import Routing.Hash as RH
 main ∷ Effect Unit
 main = HA.runHalogenAff do
   body ← HA.awaitBody
-  rootComponent <- runAppM initialStore Router.component
-  halogenIO <- runUI rootComponent unit body
-  void $ liftEffect $ RH.matchesWith (RD.parse Route.codec) \old new ->
+  rootComponent ← runAppM initialStore Router.component
+  halogenIO ← runUI rootComponent unit body
+  void $ liftEffect $ RH.matchesWith (RD.parse Route.codec) \old new →
     when (old /= Just new) $ launchAff_ do
-      _response <- halogenIO.query $ H.mkTell $ Navigate new
-      pure unit
+      void $ halogenIO.query $ H.mkTell $ Navigate new
   where
   initialStore = {}
 

@@ -1,9 +1,8 @@
 module Data.Article.Encryption (article) where
 
-
-import Data.ArticleId (ArticleId(..))
-import Data.Article (Article, Section, Overview)
+import Data.Article (Article, Overview, Section)
 import Data.Article as Article
+import Data.ArticleId (ArticleId(..))
 import Data.Paragraph (Segment(..))
 import Data.Paragraph as Paragraph
 import Data.Set as Set
@@ -11,15 +10,15 @@ import Data.String.NonEmpty as NEString
 import Data.Tag (Tag(..))
 import Type.Proxy (Proxy(..))
 
-article :: Article
+article ∷ Article
 article =
   { overview
-  , sandboxes: []
+  , sandboxes: Set.fromFoldable []
   , sections
   , tags: Set.fromFoldable [ Cryptography ]
   }
 
-overview :: Overview
+overview ∷ Overview
 overview =
   Article.unsafeOverview
     [ symmetricEncryptionParagraph
@@ -29,15 +28,15 @@ overview =
   where
   asymmetricEncryptionParagraph = Paragraph.unsafeParagraph
     [ InternalReference
-        (NEString.nes (Proxy :: _ "check out asymmetric encryption"))
+        (NEString.nes (Proxy ∷ _ "check out asymmetric encryption"))
         AsymmetricEncryption
     ]
 
   symmetricEncryptionParagraph = Paragraph.unsafeParagraph
     [ InternalReference
-        (NEString.nes (Proxy :: _ "check out symmetric encryption"))
+        (NEString.nes (Proxy ∷ _ "check out symmetric encryption"))
         SymmetricEncryption
     ]
 
-sections :: Array Section
+sections ∷ Array Section
 sections = []

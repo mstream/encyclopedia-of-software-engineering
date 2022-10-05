@@ -25,7 +25,6 @@ import Component.Utils
   , animationFrameUpdateEmitter
   , classes
   )
-import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, modify_, put)
 import Data.Array ((!!))
 import Data.Array as Array
@@ -47,7 +46,6 @@ import Data.Sorting as Sorting
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Exception (Error)
 import Halogen (Component, ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML (PlainHTML)
@@ -101,7 +99,6 @@ eyeMovementIndexToString idx =
 component
   ∷ ∀ m
   . MonadAff m
-  ⇒ MonadThrow Error m
   ⇒ Component Query Input Output m
 component = H.mkComponent
   { initialState: \input →
@@ -116,7 +113,7 @@ component = H.mkComponent
       }
   }
 
-render ∷ ∀ m. MonadAff m ⇒ MonadThrow Error m ⇒ State → ComponentView m
+render ∷ ∀ m. MonadAff m ⇒ State → ComponentView m
 render state = case currentFrame of
   Left errorMsg → HH.text errorMsg
   Right frame →

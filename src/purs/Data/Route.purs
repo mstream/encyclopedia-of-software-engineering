@@ -14,7 +14,7 @@ data Route = Article ArticleId | Home
 
 derive instance Eq Route
 
-codec :: RouteDuplex' Route
+codec ∷ RouteDuplex' Route
 codec = root $ sum
   { "Article": "articles" / articleId segment
   , "Home": noArgs
@@ -22,7 +22,7 @@ codec = root $ sum
 
 derive instance Generic Route _
 
-articleId :: RouteDuplex' String -> RouteDuplex' ArticleId
+articleId ∷ RouteDuplex' String → RouteDuplex' ArticleId
 articleId = as
   (Codec.encode ArticleId.codec)
   (Codec.decode ArticleId.codec)

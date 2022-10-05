@@ -9,7 +9,6 @@ import Prelude
 import Component.Sandbox (MakeFormComponent, Presets)
 import Component.Sandbox as Sandbox
 import Component.Utils (radioGroup, textInput)
-import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (get, put)
 import Data.Const (Const)
 import Data.Either (Either(..))
@@ -22,7 +21,6 @@ import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Exception (Error)
 import Formless
   ( FieldAction
   , FieldInput
@@ -85,7 +83,6 @@ data Action
 component
   ∷ ∀ m
   . MonadAff m
-  ⇒ MonadThrow Error m
   ⇒ MakeFormComponent Config m
 component presets =
   Formless.formless

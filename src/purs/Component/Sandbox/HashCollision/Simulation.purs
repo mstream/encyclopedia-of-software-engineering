@@ -3,7 +3,6 @@ module Component.Sandbox.HashCollision.Simulation (component) where
 import Prelude
 
 import Component.Utils (OpaqueSlot, classes)
-import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.State (put)
 import Data.Array as Array
 import Data.Binary (Bit(..))
@@ -20,7 +19,6 @@ import Data.Number.Format (fixed, toStringWith)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Exception (Error)
 import Halogen (Component, ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML (PlainHTML)
@@ -46,7 +44,6 @@ data Action = Receive Input
 component
   ∷ ∀ m
   . MonadAff m
-  ⇒ MonadThrow Error m
   ⇒ Component Query Input Output m
 component = H.mkComponent
   { initialState: identity
@@ -57,7 +54,7 @@ component = H.mkComponent
       }
   }
 
-render ∷ ∀ m. MonadAff m ⇒ MonadThrow Error m ⇒ Config → ComponentView m
+render ∷ ∀ m. MonadAff m ⇒ Config → ComponentView m
 render { algorithm, input1, input2 } =
   HH.fromPlainHTML $ HH.table
     [ classes [ "border-collapse", "border-spacing-2" ] ]
