@@ -1,5 +1,12 @@
 
 
+## [1.3.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.2.1...1.3.0) (2022-11-10)
+
+
+### Features
+
+* add a sandbox for the HTTP Basic Auth article ([cbe038a](https://github.com/mstream/encyclopedia-of-software-engineering/commit/cbe038a4ee67922793228db7d954e46131812879))
+
 ### [1.2.1](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.2.0...1.2.1) (2022-10-05)
 
 
