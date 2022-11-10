@@ -35,6 +35,7 @@ import Utils (allValues)
 
 data ArticleId
   = AsymmetricEncryption
+  | BasicHttpAuthentication
   | BubbleSort
   | CryptographicHashing
   | Encryption
@@ -74,6 +75,9 @@ toTitle ∷ ArticleId → Title
 toTitle = Title <<< case _ of
   AsymmetricEncryption →
     NEString.nes (Proxy ∷ _ "Asymmetric Encryption")
+
+  BasicHttpAuthentication →
+    NEString.nes (Proxy ∷ _ "Basic HTTP Authentication")
 
   BubbleSort →
     NEString.nes (Proxy ∷ _ "Bubble Sort")

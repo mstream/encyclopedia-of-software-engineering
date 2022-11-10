@@ -20,6 +20,7 @@ import CSS
   , top
   , white
   ) as CSS
+import Component.Sandbox (SimulationComponent)
 import Component.Utils
   ( OpaqueSlot
   , animationFrameUpdateEmitter
@@ -46,7 +47,7 @@ import Data.Sorting as Sorting
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Halogen (Component, ComponentHTML, HalogenM)
+import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML (PlainHTML)
 import Halogen.HTML as HH
@@ -99,7 +100,7 @@ eyeMovementIndexToString idx =
 component
   ∷ ∀ m
   . MonadAff m
-  ⇒ Component Query Input Output m
+  ⇒ SimulationComponent Config m
 component = H.mkComponent
   { initialState: \input →
       { animation: generateAnimation input

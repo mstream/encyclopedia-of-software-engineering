@@ -2,6 +2,7 @@ module Component.Sandbox.HashCollision.Simulation (component) where
 
 import Prelude
 
+import Component.Sandbox (SimulationComponent)
 import Component.Utils (OpaqueSlot, classes)
 import Control.Monad.State (put)
 import Data.Array as Array
@@ -19,7 +20,7 @@ import Data.Number.Format (fixed, toStringWith)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Halogen (Component, ComponentHTML, HalogenM)
+import Halogen (ComponentHTML, HalogenM)
 import Halogen as H
 import Halogen.HTML (PlainHTML)
 import Halogen.HTML as HH
@@ -44,7 +45,7 @@ data Action = Receive Input
 component
   ∷ ∀ m
   . MonadAff m
-  ⇒ Component Query Input Output m
+  ⇒ SimulationComponent Config m
 component = H.mkComponent
   { initialState: identity
   , render

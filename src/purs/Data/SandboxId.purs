@@ -9,6 +9,7 @@ data SandboxId
   = BubbleSort
   | CesarCypher
   | HashCollision
+  | HttpBasicAuth
 
 derive instance Generic SandboxId _
 

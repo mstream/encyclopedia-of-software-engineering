@@ -11,16 +11,16 @@ import Data.Article (Article, Overview, Section)
 import Data.ArticleId (ArticleId, Title)
 import Data.ArticleId as ArticleId
 import Data.ArticleIndex as ArticleIndex
-import Data.Foldable (class Foldable, null)
+import Data.Foldable (null)
 import Data.FunctorWithIndex (class FunctorWithIndex)
-import Data.List as List
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Paragraph (Paragraph, Segment(..))
 import Data.Route (Route(..))
 import Data.Route as Route
 import Data.SandboxId (SandboxId)
 import Data.SandboxIndex (ChildSlots)
 import Data.SandboxIndex as SandboxIndex
+import Data.Semigroup.Foldable (class Foldable1)
 import Data.String.NonEmpty as NEString
 import Effect.Aff.Class (class MonadAff)
 import Effect.Exception (Error)
@@ -67,14 +67,21 @@ render articleId =
   in
     HH.div
       [ classes [ "flex", "flex-col", "mx-auto", "overflow-scroll" ] ]
-      [ HH.fromPlainHTML $ renderArticle title article
-      , renderSandboxes $ List.fromFoldable article.sandboxes
-      , HH.fromPlainHTML $ renderRelatedArticles relatedArticleIds
-      ]
+      ( Array.concat
+          [ [ HH.fromPlainHTML $ renderArticle title article ]
+          , maybe [] (Array.singleton <<< renderSandboxes) $
+              NEArray.fromFoldable article.sandboxes
+          , maybe []
+              ( Array.singleton
+                  <<< HH.fromPlainHTML
+                  <<< renderRelatedArticles
+              ) $ NEArray.fromFoldable relatedArticleIds
+          ]
+      )
 
 renderRelatedArticles
   ∷ ∀ f
-  . Foldable f
+  . Foldable1 f
   ⇒ Functor f
   ⇒ f ArticleId
   → PlainHTML
@@ -110,7 +117,7 @@ renderArticle title { overview, sections } =
 renderSandboxes
   ∷ ∀ f m
   . FunctorWithIndex Int f
-  ⇒ Foldable f
+  ⇒ Foldable1 f
   ⇒ MonadAff m
   ⇒ MonadThrow Error m
   ⇒ f SandboxId

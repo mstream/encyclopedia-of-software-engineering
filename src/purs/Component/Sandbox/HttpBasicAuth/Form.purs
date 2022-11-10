@@ -1,18 +1,21 @@
-module Component.Sandbox.CesarCypher.Form (Output(..), Query, component) where
+module Component.Sandbox.HttpBasicAuth.Form
+  ( Output(..)
+  , Query
+  , component
+  ) where
 
 import Prelude
 
 import Component.Sandbox (MakeFormComponent, Presets)
 import Component.Sandbox as Sandbox
-import Component.Utils (rangeInput, textInput)
+import Component.Utils (textInput)
 import Control.Monad.State (get, put)
-import Data.CesarCypher (Config, Key, Message)
-import Data.CesarCypher as CesarCypher
 import Data.Const (Const)
-import Data.Either (Either(..))
-import Data.Int as Int
-import Data.Maybe (Maybe(..), maybe)
+import Data.Http.BasicAuth (Config)
+import Data.Http.BasicAuth as BasicAuth
+import Data.Maybe (Maybe(..))
 import Data.NonEmpty (head)
+import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NEString
 import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\))
@@ -49,8 +52,8 @@ type ChildSlots = ()
 
 type FormFields ∷ (Type → Type → Type → Type) → Row Type
 type FormFields f =
-  ( message ∷ f String String Message
-  , key ∷ f String String Key
+  ( password ∷ f String String NonEmptyString
+  , username ∷ f String String NonEmptyString
   )
 
 type FormInputs = FormFields FieldInput
@@ -64,7 +67,6 @@ type Form = FormContext
   Action
 
 type Input = Unit
-
 type Output = Config
 
 type Query ∷ ∀ a. a → Type
@@ -96,26 +98,29 @@ component presets =
         }
 
 render ∷ ∀ m. Presets Config → State → ComponentView m
-render presets { actions, fields, formActions, formState } =
+render
+  presets
+  { actions, fields, formActions, formState } =
   Sandbox.renderForm
     formActions.handleSubmit
     ApplyPreset
     formState
     presets
     [ textInput
-        { action: actions.message
-        , label: NEString.nes (Proxy ∷ _ "message")
-        , lengthRange: CesarCypher.minMessageLength
-            /\ CesarCypher.maxMessageLength
-        , placeholder: "foo"
-        , state: fields.message
+        { action: actions.username
+        , label: NEString.nes (Proxy ∷ _ "username")
+        , lengthRange: BasicAuth.minUsernameLength
+            /\ BasicAuth.maxUsernameLength
+        , placeholder: "john"
+        , state: fields.username
         }
-    , rangeInput
-        { action: actions.key
-        , label: NEString.nes (Proxy ∷ _ "key")
-        , state: fields.key
-        , valueRange: CesarCypher.minKey /\ CesarCypher.maxKey
-
+    , textInput
+        { action: actions.password
+        , label: NEString.nes (Proxy ∷ _ "password")
+        , lengthRange: BasicAuth.minPasswordLength
+            /\ BasicAuth.maxPasswordLength
+        , placeholder: "qwerty"
+        , state: fields.password
         }
     ]
 
@@ -143,13 +148,12 @@ handleQuery = do
   Formless.handleSubmitValidate
     Formless.raise
     Formless.validate
-    { key: maybe (Left "key is not an integer") CesarCypher.key
-        <<< Int.fromString
-    , message: CesarCypher.message
+    { password: BasicAuth.password
+    , username: BasicAuth.username
     }
 
 toInputs ∷ Config → Record FormInputs
-toInputs { key, message } =
-  { key: show $ CesarCypher.toInt key
-  , message: CesarCypher.toString message
+toInputs { password, username } =
+  { password: NEString.toString password
+  , username: NEString.toString username
   }

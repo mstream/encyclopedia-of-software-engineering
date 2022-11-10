@@ -5,6 +5,7 @@ import Prelude
 import Component.Sandbox.BubbleSort as BubbleSort
 import Component.Sandbox.CesarCypher as CesarCypher
 import Component.Sandbox.HashCollision as HashCollision
+import Component.Sandbox.HttpBasicAuth as HttpBasicAuth
 import Component.Utils (OpaqueSlot)
 import Control.Monad.Error.Class (class MonadThrow)
 import Data.SandboxId (SandboxId(..))
@@ -18,6 +19,7 @@ type ChildSlots =
   ( bubbleSort ∷ SandboxSlot
   , cesarCypher ∷ SandboxSlot
   , hashCollision ∷ SandboxSlot
+  , httpBasicAuth ∷ SandboxSlot
   )
 
 type SandboxSlot = OpaqueSlot Unit
@@ -48,5 +50,12 @@ sandboxComponentById = case _ of
       (Proxy ∷ _ "hashCollision")
       unit
       HashCollision.component
+      unit
+
+  HttpBasicAuth →
+    HH.slot_
+      (Proxy ∷ _ "httpBasicAuth")
+      unit
+      HttpBasicAuth.component
       unit
 

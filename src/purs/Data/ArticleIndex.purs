@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Article (Article, Tags)
 import Data.Article.AsymmetricEncryption as AsymmetricEncryption
+import Data.Article.BasicHttpAuthentication as BasicHttpAuthentication
 import Data.Article.BubbleSort as BubbleSort
 import Data.Article.CryptographicHashing as CryptographicHashing
 import Data.Article.Encryption as Encryption
@@ -46,9 +47,21 @@ relatedArticlesById articleId =
 
 articleById ∷ ArticleId → Article
 articleById = case _ of
-  AsymmetricEncryption → AsymmetricEncryption.article
-  BubbleSort → BubbleSort.article
-  CryptographicHashing → CryptographicHashing.article
-  Encryption → Encryption.article
-  SymmetricEncryption → SymmetricEncryption.article
+  AsymmetricEncryption →
+    AsymmetricEncryption.article
+
+  BasicHttpAuthentication →
+    BasicHttpAuthentication.article
+
+  BubbleSort →
+    BubbleSort.article
+
+  CryptographicHashing →
+    CryptographicHashing.article
+
+  Encryption →
+    Encryption.article
+
+  SymmetricEncryption →
+    SymmetricEncryption.article
 
