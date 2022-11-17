@@ -1,5 +1,12 @@
 
 
+## [1.4.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.3.0...1.4.0) (2022-11-17)
+
+
+### Features
+
+* add alphabetical and topical navigation views ([088bc5f](https://github.com/mstream/encyclopedia-of-software-engineering/commit/088bc5fc55da3be255ae989a2679e67c12ab5deb))
+
 ## [1.3.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.2.1...1.3.0) (2022-11-10)
 
 
