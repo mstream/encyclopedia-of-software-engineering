@@ -114,3 +114,4 @@ decode = Slug.parse >>> case _ of
 
 codec ∷ BasicCodec (Either String) String ArticleId
 codec = basicCodec decode encode
+

@@ -3,16 +3,14 @@ module Component.Router (Query(..), component) where
 import Prelude
 
 import Capability.Navigate (class Navigate, navigate)
+import Component.Navigation as Navigation
 import Component.Page.Article as Article
 import Component.Page.Home as Home
 import Component.Utils (OpaqueSlot, classes)
 import Control.Monad.Error.Class (class MonadThrow)
 import Data.ArticleId (ArticleId)
-import Data.ArticleId as ArticleId
 import Data.Either (hush)
-import Data.Enum (upFromIncluding)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Paragraph (Segment(..))
 import Data.Route (Route(..))
 import Data.Route as Route
 import Effect.Aff.Class (class MonadAff)
@@ -42,8 +40,9 @@ data Action
   | Receive (Connected Store Unit)
 
 type ChildSlots =
-  ( home ∷ OpaqueSlot Unit
-  , article ∷ OpaqueSlot Unit
+  ( article ∷ OpaqueSlot Unit
+  , home ∷ OpaqueSlot Unit
+  , navigation ∷ OpaqueSlot Unit
   )
 
 component
@@ -73,7 +72,7 @@ handleAction = case _ of
       getHash
     navigate $ fromMaybe Home initialRoute
 
-  Receive _ → 
+  Receive _ →
     pure unit
 
 handleQuery
@@ -124,8 +123,8 @@ renderFound
   → ComponentView m
 renderFound mbArticleId =
   HH.div
-    [ classes [ "flex", "flex-row" ] ]
-    [ HH.fromPlainHTML renderNavigation
+    [ classes [ "flex", "flex-row", "space-x-2" ] ]
+    [ renderNavigation
     , HH.main
         [ classes [ "basis-10/12" ] ]
         [ case mbArticleId of
@@ -145,15 +144,10 @@ renderFound mbArticleId =
         ]
     ]
 
-renderNavigation ∷ PlainHTML
+renderNavigation ∷ ∀ m. ComponentView m
 renderNavigation = HH.aside
-  [ classes [ "basis-2/12", "flex", "flex-col" ] ]
-  (renderItem <$> upFromIncluding bottom)
-  where
-  renderItem articleId = Article.renderSegment
-    $ InternalReference
-        (ArticleId.toNonEmptyString $ ArticleId.toTitle articleId)
-        articleId
+  [ classes [ "basis-2/12" ] ]
+  [ HH.slot_ (Proxy ∷ _ "navigation") unit Navigation.component unit ]
 
 renderFooter ∷ PlainHTML
 renderFooter = HH.footer

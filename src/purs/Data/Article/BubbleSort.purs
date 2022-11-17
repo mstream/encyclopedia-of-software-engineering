@@ -18,7 +18,6 @@ article =
   { overview
   , sandboxes: Set.fromFoldable [ BubbleSort ]
   , sections
-  , tags: Set.fromFoldable [ Algorithms, Sorting ]
   }
 
 overview ∷ Overview

@@ -12,7 +12,6 @@ article =
   { overview
   , sandboxes: Set.fromFoldable [ HttpBasicAuth ]
   , sections
-  , tags: Set.fromFoldable []
   }
 
 overview ∷ Overview

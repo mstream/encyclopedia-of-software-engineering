@@ -17,7 +17,6 @@ article =
   { overview
   , sandboxes: Set.fromFoldable []
   , sections
-  , tags: Set.fromFoldable [ Cryptography ]
   }
 
 overview ∷ Overview

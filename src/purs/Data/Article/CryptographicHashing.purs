@@ -18,7 +18,6 @@ article =
   { overview
   , sandboxes: Set.fromFoldable [ HashCollision ]
   , sections
-  , tags: Set.fromFoldable [ Cryptography ]
   }
 
 overview ∷ Overview

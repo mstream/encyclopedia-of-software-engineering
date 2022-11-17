@@ -18,7 +18,6 @@ article =
   { overview
   , sandboxes: Set.fromFoldable [ CesarCypher ]
   , sections
-  , tags: Set.fromFoldable [ Cryptography ]
   }
 
 overview ∷ Overview

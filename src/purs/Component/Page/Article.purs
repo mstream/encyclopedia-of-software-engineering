@@ -178,7 +178,9 @@ renderSegment = case _ of
 
   InternalReference rep articleId →
     HH.a
-      [ articleHref articleId, classes linkClassNames ]
+      [ articleHref articleId
+      , classes linkClassNames
+      ]
       [ HH.text $ NEString.toString rep ]
 
   Text s →
@@ -189,6 +191,7 @@ linkClassNames =
   [ "hover:underline"
   , "no-underline"
   , "text-sky-500"
+  , "w-fit"
   ]
 
 handleAction ∷ ∀ m. MonadAff m ⇒ Action → ComponentMonad m Unit

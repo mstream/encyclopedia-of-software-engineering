@@ -1,4 +1,4 @@
-module Data.Article (Article, Overview, Section, Tags, unsafeOverview) where
+module Data.Article (Article, Overview, Section, unsafeOverview) where
 
 import Prelude
 
@@ -17,15 +17,12 @@ type Article =
   { overview ∷ Overview
   , sandboxes ∷ Set SandboxId
   , sections ∷ Array Section
-  , tags ∷ Tags
   }
 
 type Overview = NonEmptyArray Paragraph
 
 type Section =
   { paragraphs ∷ NonEmptyArray Paragraph, title ∷ NonEmptyString }
-
-type Tags = Set Tag
 
 unsafeOverview ∷ ∀ f. Foldable f ⇒ f Paragraph → Overview
 unsafeOverview = unsafePartial $ fromJust <<< NEArray.fromFoldable
