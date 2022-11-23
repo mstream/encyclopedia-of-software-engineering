@@ -1,21 +1,28 @@
-module Data.Paragraph (Paragraph, Segment(..), unsafeParagraph) where
+module Data.Paragraph
+  ( ExternalLink(..)
+  , Paragraph
+  , Segment(..)
+  , toString
+  ) where
 
 import Prelude
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.ArticleId (ArticleId)
-import Data.Foldable (class Foldable)
-import Data.Maybe (fromJust)
 import Data.String.NonEmpty (NonEmptyString)
-import Partial.Unsafe (unsafePartial)
-import Data.Array.NonEmpty as NEArray
+import Data.String.NonEmpty as NEString
 
 type Paragraph = NonEmptyArray Segment
 
 data Segment
-  = ExternalReference NonEmptyString String
+  = ExternalReference NonEmptyString ExternalLink
   | InternalReference NonEmptyString ArticleId
-  | Text String
+  | Text NonEmptyString
 
-unsafeParagraph :: forall f. Foldable f => f Segment -> Paragraph
-unsafeParagraph = unsafePartial $ fromJust <<< NEArray.fromFoldable
+data ExternalLink = Wikipedia NonEmptyString
+
+toString ∷ ExternalLink → String
+toString = case _ of
+  Wikipedia slug →
+    "https://en.wikipedia.org/wiki/" <> NEString.toString slug
+

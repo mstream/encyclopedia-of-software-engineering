@@ -15,6 +15,7 @@ import Data.Foldable (null)
 import Data.FunctorWithIndex (class FunctorWithIndex)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Paragraph (Paragraph, Segment(..))
+import Data.Paragraph as Paragraph
 import Data.Route (Route(..))
 import Data.Route as Route
 import Data.SandboxId (SandboxId)
@@ -165,26 +166,32 @@ renderOverview overview =
 renderParagraph ∷ Paragraph → PlainHTML
 renderParagraph paragraph =
   HH.div
-    [ classes [ "flex", "flex-col", "mt-4" ]
+    [ classes [ "flex", "flex-row", "flex-wrap", "gap-2", "mt-4" ]
     ]
     (Array.fromFoldable $ renderSegment <$> paragraph)
 
 renderSegment ∷ Segment → PlainHTML
-renderSegment = case _ of
+renderSegment = HH.span_ <<< case _ of
   ExternalReference rep href →
-    HH.a
-      [ HP.href href, classes linkClassNames ]
-      [ HH.text $ NEString.toString rep ]
+    [ HH.sup
+        [ classes [ "text-gray-500", "text-xs" ] ]
+        [ HH.text "⎋" ]
+    , HH.a
+        [ HP.href $ Paragraph.toString href, classes linkClassNames ]
+        [ HH.text $ NEString.toString rep
+        ]
+    ]
 
   InternalReference rep articleId →
-    HH.a
-      [ articleHref articleId
-      , classes linkClassNames
-      ]
-      [ HH.text $ NEString.toString rep ]
+    [ HH.a
+        [ articleHref articleId
+        , classes linkClassNames
+        ]
+        [ HH.text $ NEString.toString rep ]
+    ]
 
   Text s →
-    HH.text s
+    [ HH.text $ NEString.toString s ]
 
 linkClassNames ∷ Array String
 linkClassNames =

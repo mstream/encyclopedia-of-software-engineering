@@ -4,13 +4,11 @@ import Prelude
 
 import Data.Array.NonEmpty as NEArray
 import Data.Article (Article, Overview, Section)
-import Data.Article as Article
+import Data.NonEmpty ((:|))
 import Data.Paragraph (Segment(..))
-import Data.Paragraph as Paragraph
 import Data.SandboxId (SandboxId(..))
 import Data.Set as Set
 import Data.String.NonEmpty as NEString
-import Data.Tag (Tag(..))
 import Type.Proxy (Proxy(..))
 
 article ∷ Article
@@ -21,17 +19,25 @@ article =
   }
 
 overview ∷ Overview
-overview = Article.unsafeOverview
-  [ Paragraph.unsafeParagraph [ Text "TODO(Overview)" ] ]
+overview = NEArray.fromNonEmpty $ summaryParagraph :| []
+  where
+  summaryParagraph =
+    NEArray.fromNonEmpty $
+      ( Text $ NEString.nes
+          ( Proxy
+              ∷ _
+                  "A set of hashing algorithms, for which for is practically infeasible to invert or reverse the computation."
+          )
+      ) :| []
 
 sections ∷ Array Section
-sections =
-  [ typesSection
-  ]
+sections = [ typesSection ]
 
 typesSection ∷ Section
 typesSection =
-  { paragraphs: NEArray.singleton $ Paragraph.unsafeParagraph
-      [ Text "TODO(Types)" ]
+  { paragraphs: NEArray.fromNonEmpty $ typesParagraph :| []
   , title: NEString.nes (Proxy ∷ _ "Types")
   }
+  where
+  typesParagraph = NEArray.fromNonEmpty $
+    (Text $ NEString.nes (Proxy ∷ _ "TODO(Types)")) :| []
