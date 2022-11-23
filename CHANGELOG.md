@@ -1,5 +1,12 @@
 
 
+## [1.5.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.4.0...1.5.0) (2022-11-23)
+
+
+### Features
+
+* add article summaries ([431716b](https://github.com/mstream/encyclopedia-of-software-engineering/commit/431716bf63c65890ba3d6f61f86852eaa14dfbbc))
+
 ## [1.4.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.3.0...1.4.0) (2022-11-17)
 
 
