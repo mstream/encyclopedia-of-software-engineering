@@ -177,7 +177,10 @@ renderSegment = HH.span_ <<< case _ of
         [ classes [ "text-gray-500", "text-xs" ] ]
         [ HH.text "⎋" ]
     , HH.a
-        [ HP.href $ Paragraph.toString href, classes linkClassNames ]
+        [ HP.href $ Paragraph.toString href
+        , classes linkClassNames
+        , HP.target "_blank"
+        ]
         [ HH.text $ NEString.toString rep
         ]
     ]
