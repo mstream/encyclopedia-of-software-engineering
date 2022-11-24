@@ -10,7 +10,7 @@ module Data.ArticleId
 import Prelude
 
 import Data.Bounded.Generic (genericBottom, genericTop)
-import Data.Codec (BasicCodec, basicCodec)
+import Data.Codec (Codec', codec')
 import Data.Either (Either(..), note)
 import Data.Either.Nested (type (\/))
 import Data.Enum (class BoundedEnum, class Enum)
@@ -112,6 +112,6 @@ decode = Slug.parse >>> case _ of
   idsBySlug = Map.fromFoldable
     $ (\id → toSlug id /\ id) <$> (allValues ∷ Array ArticleId)
 
-codec ∷ BasicCodec (Either String) String ArticleId
-codec = basicCodec decode encode
+codec ∷ Codec' (Either String) String ArticleId
+codec = codec' decode encode
 
