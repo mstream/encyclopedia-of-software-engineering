@@ -1,5 +1,12 @@
 
 
+## [1.6.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.5.0...1.6.0) (2022-11-24)
+
+
+### Features
+
+* make external links open in a new tab ([77c9c8b](https://github.com/mstream/encyclopedia-of-software-engineering/commit/77c9c8bbb31841f12f701725b8f9bfbd182bea68))
+
 ## [1.5.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.4.0...1.5.0) (2022-11-23)
 
 
