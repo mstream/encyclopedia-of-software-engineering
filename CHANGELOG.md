@@ -1,5 +1,7 @@
 
 
+### [1.6.1](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.6.0...1.6.1) (2022-11-24)
+
 ## [1.6.0](https://github.com/mstream/encyclopedia-of-software-engineering/compare/1.5.0...1.6.0) (2022-11-24)
 
 
